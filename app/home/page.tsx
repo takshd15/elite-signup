@@ -299,29 +299,29 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6"
+              className="bg-zinc-900/90 border border-blue-700/40 rounded-xl max-w-md w-full p-6 shadow-[0_0_32px_0_rgba(80,0,255,0.3)]"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
               <div className="text-center mb-6">
-                <div className="relative h-12 w-12 mx-auto mb-4 overflow-hidden rounded-full bg-gradient-to-br from-primary-500 to-secondary-500">
-                  <div className="absolute inset-0.5 rounded-full bg-zinc-900 flex items-center justify-center text-white font-bold text-lg">
+                <div className="relative h-12 w-12 mx-auto mb-4 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 shadow-[0_0_16px_0_rgba(80,0,255,0.4)]">
+                  <div className="absolute inset-0.5 rounded-full bg-zinc-900 flex items-center justify-center text-white font-bold text-lg drop-shadow-[0_0_8px_rgba(80,0,255,0.5)]">
                     S
                   </div>
                 </div>
-                <h2 className="text-xl font-bold">Welcome to Strivio!</h2>
-                <p className="text-zinc-400 mt-2">Your journey to self-improvement starts here</p>
+                <h2 className="text-xl font-extrabold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Welcome to EliteScore!</h2>
+                <p className="text-white mt-2">Your journey to excellence starts here</p>
               </div>
 
               {onboardingStep === 1 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Track Your Progress</h3>
+                  <h3 className="font-extrabold text-lg bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Track Your Progress</h3>
                   <p className="text-sm text-zinc-400">
                     Set goals, track your progress, and earn XP as you improve your skills and complete tasks.
                   </p>
-                  <div className="bg-zinc-800 rounded-lg p-4 flex items-center gap-3">
-                    <Trophy className="h-8 w-8 text-primary-500" />
+                  <div className="bg-zinc-800/80 border border-blue-700/30 rounded-lg p-4 flex items-center gap-3 shadow-[0_0_16px_0_rgba(80,0,255,0.2)]">
+                    <Trophy className="h-8 w-8 text-blue-400" />
                     <div>
                       <div className="text-sm font-medium">Level up your skills</div>
                       <div className="text-xs text-zinc-500">Earn XP and badges as you progress</div>
@@ -332,12 +332,12 @@ export default function HomePage() {
 
               {onboardingStep === 2 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Connect with Others</h3>
+                  <h3 className="font-extrabold text-lg bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Connect with Others</h3>
                   <p className="text-sm text-zinc-400">
                     Join communities, follow other users, and share your achievements with your network.
                   </p>
-                  <div className="bg-zinc-800 rounded-lg p-4 flex items-center gap-3">
-                    <Users className="h-8 w-8 text-primary-500" />
+                  <div className="bg-zinc-800/80 border border-blue-700/30 rounded-lg p-4 flex items-center gap-3 shadow-[0_0_16px_0_rgba(80,0,255,0.2)]">
+                    <Users className="h-8 w-8 text-purple-400" />
                     <div>
                       <div className="text-sm font-medium">Build your network</div>
                       <div className="text-xs text-zinc-500">Learn from others on similar journeys</div>
@@ -348,12 +348,12 @@ export default function HomePage() {
 
               {onboardingStep === 3 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Get Personalized Guidance</h3>
+                  <h3 className="font-extrabold text-lg bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Get Personalized Guidance</h3>
                   <p className="text-sm text-zinc-400">
                     Receive tailored recommendations and insights based on your goals and progress.
                   </p>
-                  <div className="bg-zinc-800 rounded-lg p-4 flex items-center gap-3">
-                    <Zap className="h-8 w-8 text-primary-500" />
+                  <div className="bg-zinc-800/80 border border-blue-700/30 rounded-lg p-4 flex items-center gap-3 shadow-[0_0_16px_0_rgba(80,0,255,0.2)]">
+                    <Zap className="h-8 w-8 text-fuchsia-400" />
                     <div>
                       <div className="text-sm font-medium">Accelerate your growth</div>
                       <div className="text-xs text-zinc-500">Get AI-powered recommendations</div>
@@ -363,10 +363,10 @@ export default function HomePage() {
               )}
 
               <div className="flex justify-between mt-8">
-                <Button variant="ghost" className="text-zinc-400 hover:text-white" onClick={skipOnboarding}>
+                <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent hover:border-blue-700/40" onClick={skipOnboarding}>
                   Skip
                 </Button>
-                <EnhancedButton variant="gradient" rounded="full" animation="shimmer" onClick={nextOnboardingStep}>
+                <EnhancedButton variant="gradient" rounded="full" animation="shimmer" className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 shadow-[0_0_16px_0_rgba(80,0,255,0.4)]" onClick={nextOnboardingStep}>
                   {onboardingStep < 3 ? "Next" : "Get Started"}
                 </EnhancedButton>
               </div>
@@ -375,37 +375,45 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      <div className="container mx-auto px-4 py-6">
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-radial from-blue-500/20 via-purple-700/15 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-24 w-72 h-72 bg-gradient-radial from-purple-700/20 via-pink-600/15 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-radial from-fuchsia-500/15 via-blue-600/10 to-transparent rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4 py-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - User Profile & Stats */}
           <div className="lg:col-span-1 space-y-6">
             {/* User Profile Card */}
             <AnimatedSection delay={0.1}>
-              <EnhancedCard variant="gradient" hover="lift" className="overflow-hidden">
+              <EnhancedCard variant="gradient" hover="lift" className="overflow-hidden bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
                 <EnhancedCardContent className="p-0">
-                  <div className="bg-gradient-to-r from-primary-600/30 to-secondary-600/30 h-24 rounded-t-lg relative overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-600/40 to-purple-600/40 h-24 rounded-t-lg relative overflow-hidden">
                     <motion.div
                       className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=1200')] bg-cover bg-center opacity-20"
                       initial={{ scale: 1.1 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 1 }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/30 to-fuchsia-500/20" />
                   </div>
                   <div className="px-4 pb-4 relative">
-                    <Avatar className="h-16 w-16 border-4 border-black -mt-8 ring-2 ring-primary-500 interactive">
+                    <Avatar className="h-16 w-16 border-4 border-black -mt-8 ring-2 ring-blue-500 shadow-[0_0_16px_0_rgba(80,0,255,0.4)] interactive">
                       <AvatarImage src="/placeholder.svg?height=150&width=150" />
                       <AvatarFallback className="bg-zinc-800">U</AvatarFallback>
                     </Avatar>
                     <div className="mt-2 flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold">Alex Morgan</h3>
+                        <h3 className="font-extrabold text-lg bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Alex Morgan</h3>
                         <p className="text-sm text-zinc-400">Software Engineer</p>
                       </div>
                       <EnhancedButton
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                        className="bg-zinc-800/80 border-blue-700/40 text-white hover:bg-zinc-700 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.3)]"
                         onClick={() => router.push("/profile")}
                       >
                         View Profile
@@ -413,12 +421,12 @@ export default function HomePage() {
                     </div>
 
                     {/* Divider */}
-                    <div className="my-3 h-px bg-zinc-800" />
+                    <div className="my-3 h-px bg-gradient-to-r from-transparent via-blue-700/50 to-transparent" />
 
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between mb-1 text-sm">
-                          <span className="text-zinc-400">Level {userStats.level}</span>
+                          <span className="text-blue-300 font-medium">Level {userStats.level}</span>
                           <span className="text-zinc-400">
                             {userStats.xp}/{userStats.nextLevelXp} XP
                           </span>
@@ -426,27 +434,27 @@ export default function HomePage() {
                         <AnimatedProgress
                           value={userStats.xp}
                           max={userStats.nextLevelXp}
-                          className="h-2 bg-zinc-800"
+                          className="h-2 bg-zinc-800 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:via-purple-500 [&>div]:to-fuchsia-500 [&>div]:shadow-[0_0_8px_0_rgba(80,0,255,0.5)]"
                           delay={0.3}
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-zinc-800/50 rounded-lg p-3">
+                        <div className="bg-zinc-800/60 border border-blue-700/30 rounded-lg p-3 shadow-[0_0_8px_0_rgba(80,0,255,0.2)]">
                           <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-primary-500" />
+                            <Zap className="h-4 w-4 text-blue-400" />
                             <span className="text-xs text-zinc-400">Streak</span>
                           </div>
-                          <div className="font-bold mt-1">
+                          <div className="font-bold mt-1 text-white">
                             <AnimatedCounter from={0} to={userStats.streak} duration={1} delay={0.4} /> days
                           </div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-3">
+                        <div className="bg-zinc-800/60 border border-purple-700/30 rounded-lg p-3 shadow-[0_0_8px_0_rgba(147,51,234,0.2)]">
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-primary-500" />
+                            <CheckCircle className="h-4 w-4 text-purple-400" />
                             <span className="text-xs text-zinc-400">Tasks</span>
                           </div>
-                          <div className="font-bold mt-1">
+                          <div className="font-bold mt-1 text-white">
                             <AnimatedCounter from={0} to={userStats.tasksCompleted} duration={1} delay={0.5} />/
                             {userStats.tasksTotal}
                           </div>
@@ -460,43 +468,48 @@ export default function HomePage() {
 
             {/* Stats Card */}
             <AnimatedSection delay={0.2}>
-              <EnhancedCard variant="default" hover="glow" className="bg-zinc-900/50 border-zinc-800">
+              <EnhancedCard variant="default" hover="glow" className="bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
                 <EnhancedCardHeader className="pb-2">
                   <EnhancedCardTitle className="text-lg flex items-center">
-                    <BarChart2 className="h-5 w-5 mr-2 text-primary-500" />
-                    Your Progress
+                    <BarChart2 className="h-5 w-5 mr-2 text-blue-400" />
+                    <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent font-extrabold">Your Progress</span>
                   </EnhancedCardTitle>
                 </EnhancedCardHeader>
                 <EnhancedCardContent className="p-4 pt-0">
                   <div className="space-y-4">
-                    <div className="bg-zinc-800/50 rounded-lg p-3">
+                    <div className="bg-zinc-800/60 border border-blue-700/30 rounded-lg p-3 shadow-[0_0_8px_0_rgba(80,0,255,0.2)]">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Weekly Goal Progress</span>
+                        <span className="text-sm font-medium text-white">Weekly Goal Progress</span>
                         <span className="text-xs text-zinc-400">{Math.round(taskCompletionPercentage)}%</span>
                       </div>
-                      <AnimatedProgress value={completedTasks.length} max={upcomingTasks.length} delay={0.6} />
+                      <AnimatedProgress 
+                        value={completedTasks.length} 
+                        max={upcomingTasks.length} 
+                        className="[&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:via-purple-500 [&>div]:to-fuchsia-500 [&>div]:shadow-[0_0_8px_0_rgba(80,0,255,0.5)]"
+                        delay={0.6} 
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-zinc-800/50 rounded-lg p-3">
+                      <div className="bg-zinc-800/60 border border-green-700/30 rounded-lg p-3 shadow-[0_0_8px_0_rgba(34,197,94,0.2)]">
                         <div className="text-xs text-zinc-400 mb-1">Network Growth</div>
                         <div className="flex items-end gap-1">
-                          <span className="text-lg font-bold text-primary-500">+</span>
+                          <span className="text-lg font-bold text-green-400">+</span>
                           <AnimatedCounter
                             from={0}
                             to={userStats.connectionsGrowth}
-                            className="text-lg font-bold"
+                            className="text-lg font-bold text-white"
                             delay={0.7}
                           />
                         </div>
                       </div>
-                      <div className="bg-zinc-800/50 rounded-lg p-3">
+                      <div className="bg-zinc-800/60 border border-fuchsia-700/30 rounded-lg p-3 shadow-[0_0_8px_0_rgba(217,70,239,0.2)]">
                         <div className="text-xs text-zinc-400 mb-1">Skills Improved</div>
                         <div className="flex items-end gap-1">
                           <AnimatedCounter
                             from={0}
                             to={userStats.skillsImproved}
-                            className="text-lg font-bold"
+                            className="text-lg font-bold text-white"
                             delay={0.8}
                           />
                         </div>
@@ -509,18 +522,18 @@ export default function HomePage() {
 
             {/* Upcoming Tasks */}
             <AnimatedSection delay={0.3}>
-              <EnhancedCard variant="default" hover="glow" className="bg-zinc-900/50 border-zinc-800">
+              <EnhancedCard variant="default" hover="glow" className="bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
                 <EnhancedCardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <EnhancedCardTitle className="text-lg flex items-center">
-                      <Calendar className="h-5 w-5 mr-2 text-primary-500" />
-                      Upcoming Tasks
+                      <Calendar className="h-5 w-5 mr-2 text-blue-400" />
+                      <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent font-extrabold">Upcoming Tasks</span>
                     </EnhancedCardTitle>
                     <EnhancedButton
                       variant="ghost"
                       size="sm"
                       rounded="full"
-                      className="text-zinc-400 hover:text-white"
+                      className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent hover:border-blue-700/40"
                       onClick={() => router.push("/goals")}
                     >
                       View All
@@ -533,10 +546,10 @@ export default function HomePage() {
                       <div
                         key={task.id}
                         className={cn(
-                          "flex items-start p-3 rounded-lg transition-all duration-300",
+                          "flex items-start p-3 rounded-lg transition-all duration-300 border",
                           completedTasks.includes(task.id)
-                            ? "bg-primary-900/10 border border-primary-800/30"
-                            : "bg-zinc-800/50 hover:bg-zinc-800",
+                            ? "bg-blue-900/20 border-blue-800/40 shadow-[0_0_8px_0_rgba(59,130,246,0.3)]"
+                            : "bg-zinc-800/60 border-zinc-700/50 hover:bg-zinc-800 hover:border-blue-700/40 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.2)]",
                         )}
                       >
                         <div className="flex-1">
@@ -553,7 +566,7 @@ export default function HomePage() {
                             />
                             <h4
                               className={cn(
-                                "text-sm font-medium",
+                                "text-sm font-medium text-white",
                                 completedTasks.includes(task.id) && "line-through text-zinc-500",
                               )}
                             >
@@ -578,8 +591,8 @@ export default function HomePage() {
                           className={cn(
                             "h-7 px-2 text-xs",
                             completedTasks.includes(task.id)
-                              ? "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-white"
-                              : "bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700",
+                              ? "bg-zinc-800 hover:bg-zinc-700 border-blue-700/40 text-white"
+                              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-[0_0_8px_0_rgba(80,0,255,0.4)]",
                           )}
                           onClick={() => toggleTaskCompletion(task.id)}
                         >
@@ -604,7 +617,7 @@ export default function HomePage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Create Post */}
             <AnimatedSection delay={0.2}>
-              <EnhancedCard variant="default" hover="lift" className="bg-zinc-900/50 border-zinc-800">
+              <EnhancedCard variant="default" hover="lift" className="bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
                 <EnhancedCardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 interactive">
@@ -614,7 +627,7 @@ export default function HomePage() {
                     <div className="flex-1">
                       <Input
                         placeholder="Share an achievement or update..."
-                        className="bg-zinc-800 border-zinc-700 text-white focus:border-primary-500 transition-all duration-300"
+                        className="bg-zinc-800/80 border-blue-700/40 text-white focus:border-blue-500 transition-all duration-300 focus:shadow-[0_0_8px_0_rgba(80,0,255,0.3)]"
                         value={postText}
                         onChange={(e) => setPostText(e.target.value)}
                       />
@@ -626,7 +639,7 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-primary-500/50"
+                        className="bg-zinc-800/80 border-blue-700/40 text-white hover:bg-zinc-700 hover:border-blue-500/50 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.3)]"
                         leftIcon={<Image className="h-4 w-4" />}
                       >
                         Photo
@@ -635,7 +648,7 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-primary-500/50"
+                        className="bg-zinc-800/80 border-purple-700/40 text-white hover:bg-zinc-700 hover:border-purple-500/50 hover:shadow-[0_0_8px_0_rgba(147,51,234,0.3)]"
                         leftIcon={<Award className="h-4 w-4" />}
                       >
                         Achievement
@@ -644,7 +657,7 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-primary-500/50"
+                        className="bg-zinc-800/80 border-fuchsia-700/40 text-white hover:bg-zinc-700 hover:border-fuchsia-500/50 hover:shadow-[0_0_8px_0_rgba(217,70,239,0.3)]"
                         leftIcon={<Link2 className="h-4 w-4" />}
                       >
                         Link
@@ -655,6 +668,7 @@ export default function HomePage() {
                       rounded="full"
                       variant="gradient"
                       animation="shimmer"
+                      className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 shadow-[0_0_16px_0_rgba(80,0,255,0.4)]"
                       onClick={handleCreatePost}
                       disabled={!postText.trim()}
                     >
@@ -667,22 +681,22 @@ export default function HomePage() {
 
             {/* Feed Tabs */}
             <Tabs defaultValue="feed" className="w-full">
-              <TabsList className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-1 mb-4">
+              <TabsList className="bg-zinc-900/80 border border-blue-700/40 rounded-lg p-1 mb-4 shadow-[0_0_16px_0_rgba(80,0,255,0.2)]">
                 <TabsTrigger
                   value="feed"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-600/20 data-[state=active]:to-secondary-600/20 data-[state=active]:text-white rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
                 >
                   Feed
                 </TabsTrigger>
                 <TabsTrigger
                   value="network"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-600/20 data-[state=active]:to-secondary-600/20 data-[state=active]:text-white rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
                 >
                   Network
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-600/20 data-[state=active]:to-secondary-600/20 data-[state=active]:text-white rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
                 >
                   Achievements
                 </TabsTrigger>
@@ -695,7 +709,7 @@ export default function HomePage() {
                     <EnhancedCard
                       variant="default"
                       hover="lift"
-                      className="bg-zinc-900/50 border-zinc-800 overflow-hidden"
+                      className="bg-zinc-900/80 border border-blue-700/40 overflow-hidden shadow-[0_0_24px_0_rgba(80,0,255,0.2)] hover:shadow-[0_0_32px_0_rgba(80,0,255,0.4)]"
                     >
                       <EnhancedCardHeader className="p-4">
                         <div className="flex items-center justify-between">
@@ -706,9 +720,9 @@ export default function HomePage() {
                             </Avatar>
                             <div>
                               <div className="flex items-center">
-                                <span className="font-medium">{post.user.name}</span>
+                                <span className="font-bold text-white">{post.user.name}</span>
                                 {post.user.verified && (
-                                  <svg className="h-4 w-4 ml-1 text-primary-500 fill-current" viewBox="0 0 24 24">
+                                  <svg className="h-4 w-4 ml-1 text-blue-400 fill-current" viewBox="0 0 24 24">
                                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                                   </svg>
                                 )}
@@ -720,44 +734,44 @@ export default function HomePage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-zinc-400 rounded-full hover:bg-zinc-800"
+                            className="h-8 w-8 text-zinc-400 rounded-full hover:bg-zinc-800/50 hover:text-white"
                           >
                             <MoreHorizontal className="h-5 w-5" />
                           </Button>
                         </div>
                       </EnhancedCardHeader>
                       <EnhancedCardContent className="px-4 pb-2">
-                        <p className="text-sm mb-3">{post.content.text}</p>
+                        <p className="text-sm mb-3 text-white leading-relaxed">{post.content.text}</p>
 
                         {/* Achievement/Milestone Badge */}
                         {post.content.type && (
                           <div
                             className={cn(
-                              "p-3 rounded-lg mb-3 transition-all duration-300 hover:shadow-md",
+                              "p-3 rounded-lg mb-3 transition-all duration-300 hover:shadow-md border",
                               post.content.type === "achievement"
-                                ? "bg-primary-900/20 border border-primary-800/30"
+                                ? "bg-blue-900/20 border-blue-800/40 shadow-[0_0_8px_0_rgba(59,130,246,0.2)]"
                                 : post.content.type === "milestone"
-                                  ? "bg-secondary-900/20 border border-secondary-800/30"
+                                  ? "bg-purple-900/20 border-purple-800/40 shadow-[0_0_8px_0_rgba(147,51,234,0.2)]"
                                   : post.content.type === "publication"
-                                    ? "bg-accent-success/20 border border-accent-success/30"
-                                    : "bg-accent-warning/20 border border-accent-warning/30",
+                                    ? "bg-green-900/20 border-green-800/40 shadow-[0_0_8px_0_rgba(34,197,94,0.2)]"
+                                    : "bg-fuchsia-900/20 border-fuchsia-800/40 shadow-[0_0_8px_0_rgba(217,70,239,0.2)]",
                             )}
                           >
                             <div className="flex items-center">
                               {post.content.type === "achievement" && (
-                                <Award className="h-5 w-5 mr-2 text-primary-400" />
+                                <Award className="h-5 w-5 mr-2 text-blue-400" />
                               )}
                               {post.content.type === "milestone" && (
-                                <Trophy className="h-5 w-5 mr-2 text-secondary-400" />
+                                <Trophy className="h-5 w-5 mr-2 text-purple-400" />
                               )}
                               {post.content.type === "publication" && (
-                                <FileText className="h-5 w-5 mr-2 text-accent-success" />
+                                <FileText className="h-5 w-5 mr-2 text-green-400" />
                               )}
                               {post.content.type === "challenge" && (
-                                <Award className="h-5 w-5 mr-2 text-accent-warning" />
+                                <Award className="h-5 w-5 mr-2 text-fuchsia-400" />
                               )}
                               <div>
-                                <p className="font-medium text-sm">
+                                <p className="font-bold text-sm text-white">
                                   {post.content.achievement ||
                                     post.content.milestone ||
                                     post.content.publication ||
@@ -769,7 +783,7 @@ export default function HomePage() {
                         )}
 
                         {post.content.image && (
-                          <div className="rounded-lg overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg">
+                          <div className="rounded-lg overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg border border-zinc-700/50">
                             <img
                               src={post.content.image || "/placeholder.svg"}
                               alt="Post content"
@@ -787,7 +801,7 @@ export default function HomePage() {
                               rounded="full"
                               className={cn(
                                 "transition-all duration-300",
-                                likedPosts.includes(post.id) ? "text-primary-500" : "text-zinc-400",
+                                likedPosts.includes(post.id) ? "text-blue-400 bg-blue-900/20" : "text-zinc-400 hover:text-blue-400 hover:bg-zinc-800/50",
                               )}
                               onClick={() => toggleLike(post.id)}
                             >
@@ -800,7 +814,7 @@ export default function HomePage() {
                               variant="ghost"
                               size="sm"
                               rounded="full"
-                              className="text-zinc-400 hover:text-zinc-300 transition-all duration-300"
+                              className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all duration-300"
                               onClick={() => {
                                 // In a real app, this would open the comments
                                 console.log(`View comments for post ${post.id}`)
@@ -813,7 +827,7 @@ export default function HomePage() {
                               variant="ghost"
                               size="sm"
                               rounded="full"
-                              className="text-zinc-400 hover:text-zinc-300 transition-all duration-300"
+                              className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all duration-300"
                               onClick={() => {
                                 // In a real app, this would open the share dialog
                                 console.log(`Share post ${post.id}`)
@@ -829,7 +843,7 @@ export default function HomePage() {
                             rounded="full"
                             className={cn(
                               "transition-all duration-300",
-                              savedPosts.includes(post.id) ? "text-primary-500" : "text-zinc-400",
+                              savedPosts.includes(post.id) ? "text-blue-400 bg-blue-900/20" : "text-zinc-400 hover:text-blue-400 hover:bg-zinc-800/50",
                             )}
                             onClick={() => toggleSave(post.id)}
                           >
@@ -843,10 +857,10 @@ export default function HomePage() {
               </TabsContent>
 
               <TabsContent value="network" className="space-y-4">
-                <h3 className="text-lg font-semibold mb-2">People You May Know</h3>
+                <h3 className="text-lg font-extrabold mb-2 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">People You May Know</h3>
                 {networkSuggestions.map((person, index) => (
                   <AnimatedSection key={person.id} delay={0.2 + index * 0.1}>
-                    <EnhancedCard variant="default" hover="lift" className="bg-zinc-900/50 border-zinc-800">
+                    <EnhancedCard variant="default" hover="lift" className="bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_16px_0_rgba(80,0,255,0.2)] hover:shadow-[0_0_24px_0_rgba(80,0,255,0.4)]">
                       <EnhancedCardContent className="p-4">
                         <div className="flex items-center">
                           <Avatar className="h-12 w-12 mr-3 interactive">
@@ -854,7 +868,7 @@ export default function HomePage() {
                             <AvatarFallback className="bg-zinc-800">{person.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <h4 className="font-medium">{person.name}</h4>
+                            <h4 className="font-bold text-white">{person.name}</h4>
                             <p className="text-sm text-zinc-400">{person.title}</p>
                             <p className="text-xs text-zinc-500 mt-1">{person.mutualConnections} mutual connections</p>
                           </div>
@@ -863,6 +877,7 @@ export default function HomePage() {
                             rounded="full"
                             variant="gradient"
                             animation="shimmer"
+                            className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 shadow-[0_0_8px_0_rgba(80,0,255,0.4)]"
                             leftIcon={<Plus className="h-3.5 w-3.5" />}
                           >
                             Connect
@@ -876,7 +891,7 @@ export default function HomePage() {
                   <EnhancedButton
                     variant="outline"
                     rounded="full"
-                    className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-primary-500/50"
+                    className="bg-zinc-800/80 border-blue-700/40 text-white hover:bg-zinc-700 hover:border-blue-500/50 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.3)]"
                   >
                     View More Suggestions
                   </EnhancedButton>
@@ -885,21 +900,21 @@ export default function HomePage() {
 
               <TabsContent value="achievements" className="space-y-4">
                 <AnimatedSection delay={0.2} staggerChildren staggerDelay={0.1}>
-                  <h3 className="text-lg font-semibold mb-2 flex items-center">
-                    <Award className="h-5 w-5 mr-2 text-primary-500" />
-                    Your Recent Achievements
+                  <h3 className="text-lg font-extrabold mb-2 flex items-center">
+                    <Award className="h-5 w-5 mr-2 text-blue-400" />
+                    <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Your Recent Achievements</span>
                   </h3>
 
-                  <EnhancedCard variant="gradient" hover="lift" className="border-primary-800/30">
+                  <EnhancedCard variant="gradient" hover="lift" className="bg-zinc-900/80 border border-blue-800/40 shadow-[0_0_16px_0_rgba(59,130,246,0.3)]">
                     <EnhancedCardContent className="p-3">
                       <div className="flex items-start">
-                        <div className="bg-primary-900/30 p-2 rounded-full mr-3">
-                          <Award className="h-5 w-5 text-primary-400" />
+                        <div className="bg-blue-900/40 p-2 rounded-full mr-3 shadow-[0_0_8px_0_rgba(59,130,246,0.3)]">
+                          <Award className="h-5 w-5 text-blue-400" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium">Completed Advanced React Course</h3>
-                            <Badge className="bg-primary-900/50 text-primary-300 border-primary-800 text-[10px]">
+                            <h3 className="font-bold text-white">Completed Advanced React Course</h3>
+                            <Badge className="bg-blue-900/50 text-blue-300 border-blue-800 text-[10px]">
                               +500 XP
                             </Badge>
                           </div>
@@ -910,16 +925,16 @@ export default function HomePage() {
                     </EnhancedCardContent>
                   </EnhancedCard>
 
-                  <EnhancedCard variant="gradient" hover="lift" className="border-secondary-800/30">
+                  <EnhancedCard variant="gradient" hover="lift" className="bg-zinc-900/80 border border-purple-800/40 shadow-[0_0_16px_0_rgba(147,51,234,0.3)]">
                     <EnhancedCardContent className="p-3">
                       <div className="flex items-start">
-                        <div className="bg-secondary-900/30 p-2 rounded-full mr-3">
-                          <Trophy className="h-5 w-5 text-secondary-400" />
+                        <div className="bg-purple-900/40 p-2 rounded-full mr-3 shadow-[0_0_8px_0_rgba(147,51,234,0.3)]">
+                          <Trophy className="h-5 w-5 text-purple-400" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium">Promoted to Senior Developer</h3>
-                            <Badge className="bg-secondary-900/50 text-secondary-300 border-secondary-800 text-[10px]">
+                            <h3 className="font-bold text-white">Promoted to Senior Developer</h3>
+                            <Badge className="bg-purple-900/50 text-purple-300 border-purple-800 text-[10px]">
                               +750 XP
                             </Badge>
                           </div>
@@ -930,16 +945,16 @@ export default function HomePage() {
                     </EnhancedCardContent>
                   </EnhancedCard>
 
-                  <EnhancedCard variant="gradient" hover="lift" className="border-accent-success/30">
+                  <EnhancedCard variant="gradient" hover="lift" className="bg-zinc-900/80 border border-green-800/40 shadow-[0_0_16px_0_rgba(34,197,94,0.3)]">
                     <EnhancedCardContent className="p-3">
                       <div className="flex items-start">
-                        <div className="bg-accent-success/20 p-2 rounded-full mr-3">
-                          <FileText className="h-5 w-5 text-accent-success" />
+                        <div className="bg-green-900/40 p-2 rounded-full mr-3 shadow-[0_0_8px_0_rgba(34,197,94,0.3)]">
+                          <FileText className="h-5 w-5 text-green-400" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium">Published Technical Article</h3>
-                            <Badge className="bg-accent-success/20 text-accent-success border-accent-success/30 text-[10px]">
+                            <h3 className="font-bold text-white">Published Technical Article</h3>
+                            <Badge className="bg-green-900/40 text-green-300 border-green-800/40 text-[10px]">
                               +300 XP
                             </Badge>
                           </div>
@@ -955,6 +970,7 @@ export default function HomePage() {
                       variant="gradient"
                       rounded="full"
                       animation="shimmer"
+                      className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 shadow-[0_0_16px_0_rgba(80,0,255,0.4)]"
                       onClick={() => router.push("/profile")}
                     >
                       View All Achievements
@@ -972,16 +988,16 @@ export default function HomePage() {
         <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
           <DialogTrigger asChild>
             <EnhancedButton
-              className="h-12 w-12 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary-500/20"
+              className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-[0_0_24px_0_rgba(80,0,255,0.4)] hover:shadow-[0_0_32px_0_rgba(80,0,255,0.6)]"
               size="icon"
               animation="pulse"
             >
               <MessageSquare className="h-5 w-5" />
             </EnhancedButton>
           </DialogTrigger>
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-md">
+          <DialogContent className="bg-zinc-900/95 border border-blue-700/40 text-white sm:max-w-md shadow-[0_0_32px_0_rgba(80,0,255,0.3)]">
             <DialogHeader>
-              <DialogTitle>Messages</DialogTitle>
+              <DialogTitle className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent font-extrabold">Messages</DialogTitle>
               <DialogDescription className="text-zinc-400">Chat with your connections</DialogDescription>
             </DialogHeader>
             <div className="max-h-[60vh] overflow-y-auto py-4">
@@ -990,18 +1006,18 @@ export default function HomePage() {
                 {networkSuggestions.map((person) => (
                   <div
                     key={person.id}
-                    className="flex items-center p-2 hover:bg-zinc-800 rounded-lg cursor-pointer transition-all duration-300"
+                    className="flex items-center p-2 hover:bg-zinc-800/60 hover:border hover:border-blue-700/40 rounded-lg cursor-pointer transition-all duration-300"
                   >
                     <Avatar className="h-10 w-10 mr-3">
                       <AvatarImage src={person.image} />
                       <AvatarFallback className="bg-zinc-800">{person.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{person.name}</h4>
+                      <h4 className="font-bold text-sm text-white">{person.name}</h4>
                       <p className="text-xs text-zinc-400">Online</p>
                     </div>
-                    <div className="h-2 w-2 bg-accent-success rounded-full relative">
-                      <span className="absolute inset-0 bg-accent-success rounded-full animate-ping opacity-75"></span>
+                    <div className="h-2 w-2 bg-green-400 rounded-full relative">
+                      <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></span>
                     </div>
                   </div>
                 ))}
@@ -1010,9 +1026,9 @@ export default function HomePage() {
             <div className="flex items-center gap-2 mt-2">
               <Input
                 placeholder="Type a message..."
-                className="bg-zinc-800 border-zinc-700 text-white focus:border-primary-500 transition-all duration-300"
+                className="bg-zinc-800/80 border-blue-700/40 text-white focus:border-blue-500 focus:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] transition-all duration-300"
               />
-              <EnhancedButton size="icon" variant="gradient" rounded="full">
+              <EnhancedButton size="icon" variant="gradient" rounded="full" className="bg-gradient-to-r from-blue-500 to-purple-500 shadow-[0_0_8px_0_rgba(80,0,255,0.4)]">
                 <Send className="h-4 w-4" />
               </EnhancedButton>
             </div>

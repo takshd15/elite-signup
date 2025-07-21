@@ -43,27 +43,27 @@ const features = [
   {
     title: "Personalized Growth Tracking",
     description:
-      "Set goals, track progress, and visualize your improvement journey with interactive dashboards and metrics.",
+      "Set crystal-clear goals, monitor your momentum, and watch your growth come alive through beautiful interactive dashboards.",
     icon: BarChart2,
     color: "from-purple-500 to-purple-700",
   },
   {
     title: "Peer Benchmarking",
     description:
-      "Compare your progress with peers in your field to identify areas for improvement and celebrate your strengths.",
+      "Instantly see how you stack up against professionals like you, spot your skill gaps, and celebrate the wins that set you apart.",
     icon: Users,
     color: "from-fuchsia-500 to-fuchsia-700",
   },
   {
     title: "Daily Challenges",
     description:
-      "Stay motivated with personalized daily challenges that push your boundaries and build consistent habits.",
+      "Ignite your routine with bite-sized, personalized challenges that push boundaries and forge unstoppable habits.",
     icon: Zap,
     color: "from-pink-500 to-pink-600",
   },
   {
     title: "Achievement System",
-    description: "Earn XP, unlock badges, and level up as you accomplish goals and master new skills in your journey.",
+    description: "Earn XP, unlock exclusive badges, and level up as you master new skills—because progress should feel like winning.",
     icon: Trophy,
     color: "from-violet-500 to-violet-700",
   },
@@ -119,7 +119,7 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
               >
-                Daily challenges, real progress tracking, and a community that motivates you to be your best. Compare your journey with peers and gain actionable insights to accelerate growth.
+                Turn ambition into action. Tackle tailored challenges, track your progress in real time, and grow inside a community that fuels your success. Benchmark your journey against top performers and unlock data-driven insights that accelerate your rise.
               </motion.p>
 
               {/* Key Benefits Section */}
@@ -130,9 +130,9 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: 0.6 }}
               >
                 {[
-                  { icon: Trophy, text: "Upload your resume and track daily challenges" },
-                  { icon: Users, text: "Compare scores with peers in your field" },
-                  { icon: BarChart2, text: "Gain actionable insights to improve faster" },
+                  { icon: Trophy, text: "Upload your resume & get instant skill diagnostics" },
+                  { icon: Users, text: "See exactly where you rank among your peers" },
+                  { icon: BarChart2, text: "Receive razor-sharp insights that speed up your growth" },
                 ].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-[0_0_12px_0_rgba(80,0,255,0.4)]">
@@ -302,28 +302,28 @@ export default function HomePage() {
               {
                 step: "1",
                 title: "Create Your Profile",
-                description: "Sign up and upload your resume to establish your baseline skills and interests.",
+                description: "Create your profile and upload your resume for an instant skills snapshot.",
                 icon: User,
                 color: "from-blue-500 to-purple-500",
               },
               {
                 step: "2",
                 title: "Accept Challenges",
-                description: "Take on daily and weekly challenges designed to push your boundaries.",
+                description: "Dive into daily and weekly challenges engineered to stretch your limits.",
                 icon: Zap,
                 color: "from-purple-500 to-fuchsia-500",
               },
               {
                 step: "3",
                 title: "Track Progress",
-                description: "Monitor your improvements and see how you compare with peers in your field.",
+                description: "See your momentum in real time and discover exactly how you measure up.",
                 icon: BarChart2,
                 color: "from-blue-500 to-fuchsia-500",
               },
               {
                 step: "4",
                 title: "Earn & Grow",
-                description: "Collect XP, unlock achievements, and gain actionable insights for real growth.",
+                description: "Collect XP, unlock prestige badges, and convert insights into real-world success.",
                 icon: Trophy,
                 color: "from-purple-500 to-blue-500",
               },
