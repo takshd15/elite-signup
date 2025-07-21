@@ -34,8 +34,8 @@ import {
   EnhancedCardTitle,
 } from "@/components/ui/enhanced-card"
 import { Progress } from "@/components/ui/progress"
-// import { Separator } from "@/components/ui/separator" // Removed due to missing module
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -650,7 +650,7 @@ export default function ImprovementJourneyPage() {
                       </div>
                     </div>
 
-                    <div className="h-px w-full bg-zinc-800 my-6" />
+                    <Separator className="my-6" />
 
                     <div>
                       <h3 className="font-medium mb-3">Score Breakdown</h3>

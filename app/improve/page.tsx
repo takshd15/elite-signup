@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/enhanced-card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-// import { Separator } from "@/components/ui/separator" // Removed due to missing module
+import { Separator } from "@/components/ui/separator"
 import { LevelIndicator } from "@/components/level-indicator"
 
 export default function ImprovePage() {
@@ -163,7 +163,6 @@ export default function ImprovePage() {
               </div>
             </div>
 
-            {/* @ts-expect-error: Separator may be missing, ensure it's imported or defined */}
             <Separator className="bg-zinc-800" />
 
             <div className="space-y-2">
