@@ -500,10 +500,11 @@ export default function EnhancedSearchImplementation() {
       // Apply advanced filters
       let passesFilters = true
       
-      if (filters.location !== "All Locations") {
-        passesFilters = passesFilters && user.location?.includes(filters.location.split(",")[0])
+      if (filters.location !== "All Locations" && filters.location) {
+        const locationToCheck = filters.location.split(",")[0];
+        passesFilters = passesFilters && user.location?.includes(locationToCheck || "")
       }
-      if (filters.university !== "All Universities") {
+      if (filters.university !== "All Universities" && filters.university) {
         passesFilters = passesFilters && user.university?.toLowerCase().includes(filters.university.toLowerCase())
       }
       if (filters.verified) {
