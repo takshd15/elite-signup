@@ -501,10 +501,10 @@ export default function EnhancedSearchImplementation() {
       let passesFilters = true
       
       if (filters.location !== "All Locations") {
-        passesFilters = passesFilters && user.location.includes(filters.location.split(",")[0])
+        passesFilters = passesFilters && user.location?.includes(filters.location.split(",")[0])
       }
       if (filters.university !== "All Universities") {
-        passesFilters = passesFilters && user.university.toLowerCase().includes(filters.university.toLowerCase())
+        passesFilters = passesFilters && user.university?.toLowerCase().includes(filters.university.toLowerCase())
       }
       if (filters.verified) {
         passesFilters = passesFilters && user.verified
