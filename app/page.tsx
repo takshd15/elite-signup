@@ -96,10 +96,10 @@ const features = [
 
 // Stats data
 const stats = [
-  { label: "Active Users", value: 25000, suffix: "+" },
-  { label: "Goals Completed", value: 1250000, suffix: "" },
-  { label: "Skills Improved", value: 75000, suffix: "+" },
-  { label: "Average Growth", value: 32, suffix: "%" },
+  { label: "Waitlist Members", value: 500, suffix: "+" },
+  { label: "Beta Launch", value: 2024, suffix: "" },
+  { label: "Early Access", value: 1000, suffix: " spots" },
+  { label: "Exclusive Features", value: 15, suffix: "+" },
 ]
 
 // Simple static background for better performance
@@ -233,7 +233,30 @@ function SimpleSection({ children }: { children: React.ReactNode }) {
 }
 
 export default function HomePage() {
-  // Removed heavy scroll animations for better performance
+  const [formData, setFormData] = useState({ name: '', email: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    setIsSubmitting(false)
+    setIsSubmitted(true)
+    
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setIsSubmitted(false)
+      setFormData({ name: '', email: '' })
+    }, 3000)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden">
@@ -266,12 +289,12 @@ export default function HomePage() {
             <motion.div className="space-y-8 lg:space-y-12 text-center lg:text-left" variants={itemVariants}>
               <div className="space-y-6 lg:space-y-8">
                 <motion.div 
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-blue-300 text-sm font-medium"
-                  whileHover={{ scale: 1.05, borderColor: "rgba(59, 130, 246, 0.5)" }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-300 text-sm font-medium"
+                  whileHover={{ scale: 1.05, borderColor: "rgba(249, 115, 22, 0.5)" }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    Beta Launch - Limited Spots Available
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                    Beta Launch - September 2024
                 </motion.div>
                 
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-widest uppercase leading-tight">
@@ -285,7 +308,7 @@ export default function HomePage() {
                   </h1>
                 
                 <p className="text-lg sm:text-xl md:text-2xl text-zinc-200 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                  Upload your résumé to receive your personalized GrowthScore™, tackle gamified challenges, and rise through the leaderboard with your peers.
+                  Join the waitlist for early access to EliteScore. Upload your résumé for personalized GrowthScore™, tackle gamified challenges, and rise through leaderboards with your peers.
                 </p>
                 
                 {/* Social proof with hover effect */}
@@ -306,7 +329,7 @@ export default function HomePage() {
                       />
                     ))}
                   </div>
-                  <span>Join 2,500+ students already leveling up</span>
+                  <span>Join 500+ students on the waitlist</span>
                 </motion.div>
               </div>
 
@@ -316,13 +339,11 @@ export default function HomePage() {
                   <Button
                     size="lg"
                       className="py-4 sm:py-5 px-8 sm:px-10 rounded-2xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_40px_rgba(43,188,255,0.5)] relative overflow-hidden group"
-                    asChild
+                    onClick={() => document.getElementById('beta-signup')?.scrollIntoView({ behavior: 'smooth' })}
                   >
-                      <Link href="/signup" className="flex items-center text-base sm:text-lg relative z-10">
-                      <span className="relative z-10">Start Your Journey</span>
+                      <span className="relative z-10">Join Beta Waitlist</span>
                       <ArrowRight className="ml-3 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                       <div className="absolute inset-0 bg-gradient-to-r from-[#a259ff] to-[#2bbcff] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </Link>
                   </Button>
                   </motion.div>
                   
@@ -331,16 +352,16 @@ export default function HomePage() {
                     size="lg"
                     variant="outline"
                       className="py-4 sm:py-5 px-8 sm:px-10 rounded-2xl font-bold border-zinc-600 text-white hover:bg-zinc-800/50 hover:border-zinc-500 transition-all duration-300"
-                    asChild
+                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                   >
-                      <Link href="#how-it-works" className="text-base sm:text-lg">Learn More</Link>
+                      <span className="text-base sm:text-lg">Learn More</span>
                   </Button>
                   </motion.div>
                 </div>
                 
                 {/* Trust indicators */}
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-zinc-400 justify-center lg:justify-start">
-                  {["No credit card required", "Free beta access", "2-minute setup"].map((text, i) => (
+                  {["No credit card required", "Free beta access", "September 2024 launch"].map((text, i) => (
                     <motion.div
                       key={text}
                       className="flex items-center gap-2"
@@ -396,11 +417,11 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-                          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
-              Join the Movement
+                                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
+              Beta Waitlist Stats
             </h2>
-                          <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
-              See what our community has already achieved
+            <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+              Join the growing community of early adopters
             </p>
           </motion.div>
           
@@ -419,11 +440,11 @@ export default function HomePage() {
             transition={{ duration: 0.5, delay: 0.5 }}
           >
             <motion.div 
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 text-sm font-medium"
-              whileHover={{ scale: 1.05, borderColor: "rgba(34, 197, 94, 0.5)" }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-300 text-sm font-medium"
+              whileHover={{ scale: 1.05, borderColor: "rgba(249, 115, 22, 0.5)" }}
             >
               <motion.div 
-                className="w-2 h-2 bg-green-400 rounded-full"
+                className="w-2 h-2 bg-orange-400 rounded-full"
                 animate={{
                   scale: [1, 1.5, 1],
                   opacity: [1, 0.5, 1],
@@ -433,7 +454,7 @@ export default function HomePage() {
                   repeat: Infinity,
                 }}
               />
-              Live Community - Join Now
+              Beta Waitlist - Join Now
             </motion.div>
           </motion.div>
         </div>
@@ -660,8 +681,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section with Animated Background */}
-      <section className="py-16 sm:py-20 px-4 relative overflow-hidden">
+      {/* Beta Signup Section */}
+      <section id="beta-signup" className="py-16 sm:py-20 px-4 relative overflow-hidden">
         <motion.div 
           className="absolute inset-0 opacity-20"
           animate={{
@@ -678,7 +699,7 @@ export default function HomePage() {
           }}
         />
         
-        <div className="container mx-auto max-w-5xl px-4 relative z-10">
+        <div className="container mx-auto max-w-4xl px-4 relative z-10">
           <motion.div 
             className="text-center space-y-8 sm:space-y-12"
             initial={{ opacity: 0, y: 20 }}
@@ -686,39 +707,125 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
-              Ready to Raise Your GrowthScore™?
-            </h2>
-              <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-              Secure your beta spot now, race friends up the leaderboard, and claim an exclusive OG badge before launch.
-            </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="lg"
-                  className="py-4 px-8 rounded-2xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_30px_rgba(43,188,255,0.4)] transition-all duration-300"
-                asChild
+              <motion.div 
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-300 text-sm font-medium mb-6"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
               >
-                  <Link href="/signup" className="flex items-center text-base sm:text-lg">
-                  Unlock Your Potential
-                    <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
+                <motion.div 
+                  className="w-2 h-2 bg-orange-400 rounded-full"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [1, 0.5, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                  }}
+                />
+                Beta Launch - September 2024
               </motion.div>
               
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="lg"
-                variant="outline"
-                className="py-4 px-8 rounded-2xl font-bold border-zinc-600 text-white hover:bg-zinc-800/50 hover:border-zinc-500 transition-all duration-300"
-                asChild
-              >
-                  <Link href="/login" className="text-base sm:text-lg">Sign In</Link>
-              </Button>
-            </motion.div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
+                Join the Beta Waitlist
+              </h2>
+              <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
+                Be among the first to experience EliteScore. Get early access, exclusive features, and help shape the future of career development.
+              </p>
             </div>
+
+            {/* Beta Signup Form */}
+            <motion.div 
+              className="max-w-md mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+                             <div className="bg-zinc-900/50 backdrop-blur-lg rounded-2xl border border-zinc-700 p-6 sm:p-8 shadow-2xl">
+                 {isSubmitted ? (
+                   <motion.div 
+                     className="text-center py-8"
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                   >
+                     <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                       <CheckCircle className="h-8 w-8 text-green-400" />
+                     </div>
+                     <h3 className="text-xl font-bold text-white mb-2">Welcome to the Waitlist!</h3>
+                     <p className="text-zinc-300">You'll be notified when the beta launches in September 2024.</p>
+                   </motion.div>
+                 ) : (
+                   <form onSubmit={handleSubmit} className="space-y-6">
+                     <div>
+                       <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">
+                         Full Name
+                       </label>
+                       <input
+                         type="text"
+                         id="name"
+                         name="name"
+                         value={formData.name}
+                         onChange={handleInputChange}
+                         required
+                         className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-600 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                         placeholder="Enter your full name"
+                       />
+                     </div>
+                     
+                     <div>
+                       <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
+                         Email Address
+                       </label>
+                       <input
+                         type="email"
+                         id="email"
+                         name="email"
+                         value={formData.email}
+                         onChange={handleInputChange}
+                         required
+                         className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-600 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                         placeholder="Enter your email address"
+                       />
+                     </div>
+                     
+                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                       <Button
+                         type="submit"
+                         size="lg"
+                         disabled={isSubmitting}
+                         className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_30px_rgba(43,188,255,0.4)] transition-all duration-300 disabled:opacity-50"
+                       >
+                         <span className="flex items-center justify-center">
+                           {isSubmitting ? (
+                             <>
+                               <motion.div 
+                                 className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                                 animate={{ rotate: 360 }}
+                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                               />
+                               Joining Waitlist...
+                             </>
+                           ) : (
+                             <>
+                               Join Beta Waitlist
+                               <ArrowRight className="ml-2 h-5 w-5" />
+                             </>
+                           )}
+                         </span>
+                       </Button>
+                     </motion.div>
+                   </form>
+                 )}
+                
+                <div className="mt-6 text-center">
+                  <p className="text-xs text-zinc-400">
+                    By joining the waitlist, you'll be notified when the beta launches in September 2024.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
 
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center"
@@ -726,7 +833,7 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              {["No credit card required", "Focused on balanced growth", "Actionable peer comparisons"].map((text, i) => (
+              {["Early access to all features", "Exclusive beta tester badge", "Help shape the platform"].map((text, i) => (
                 <motion.div 
                   key={text}
                   className="flex flex-col items-center gap-3"
