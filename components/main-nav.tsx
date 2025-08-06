@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { Home, Search, Target, Users, Zap, Bell } from "lucide-react"
+import { Home, Search, Target, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
@@ -14,8 +14,6 @@ export function MainNav() {
     { icon: Search, label: "Search", href: "/search" },
     { icon: Target, label: "Goals", href: "/goals" },
     { icon: Users, label: "Community", href: "/for-you" },
-    { icon: Zap, label: "Improve", href: "/improve" },
-    { icon: Bell, label: "Alerts", href: "/notifications" },
   ]
 
   const isActive = (path: string) => {
@@ -29,7 +27,7 @@ export function MainNav() {
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      <nav className="container flex items-center justify-between h-16">
+      <nav className="container flex items-center justify-between h-16 px-4">
         {navItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)

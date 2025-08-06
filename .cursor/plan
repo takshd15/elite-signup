@@ -1,0 +1,81 @@
+
+
+ ELITESCORE Initial Startup Blueprint
+Draft v1 — 25 Jul 2025            Confidential & Proprietary. For internal planning only
+Part A. Business Plan
+Section
+Details
+Company
+ELITESCORE (self‑improvement platform turning goals into daily 
+action)
+Vision
+ Helping every student and young professionals to plan and achieve their goals in a fun way.
+Problem
+Students & young professionals struggle with: • Goal‑setting & planning steps • Staying motivated/consistent • Validating progress for CVs Existing “gurus/courses” lack personalization & feedback.
+Solution
+• Upload CV → receive GrowthScore™ (AI‑assessed resume score) • Daily & monthly challenges tied to their goals (career, fitness, finance, academics) • Social feed, leaderboards, friend competitions • Affiliate learning paths (Coursera/Udemy) that raise scores
+Target Users 
+University students (18–23 yrs). Expand to early‑career professionals (24–28 yrs) later on
+Unique Value Prop
+Quantified self‑improvement via GrowthScore™
+Gamified roadmaps (challenges + leaderboards)
+Community & social proof = higher retention.
+Cost Structure
+To be discussed with the tech team
+Advantage
+early mover in AI résumé scoring + gamified self-improvement community niche.
+
+1. Executive Summary (Elevator Pitch)
+ELITESCORE is a web-based self-improvement platform designed for students who seek structured guidance to achieve their personal and career goals. By using AI to analyze and score user résumés, ELITESCORE creates personalized, goaldriven challenges and provides a gamified environment featuring leaderboards , communities, streaks, and social sharing. Our vision is to make personal growth measurable, engaging, and visible, empowering users to consistently track progress and showcase their achievements to potential employers. We aim to initially launch the MVP within university students  in the Netherlands expanding our community through strategic campus engagements and user feedback.
+2. Product Overview
+Tech Stack: Node JS + React/TypeScript (frontend MVP complete); backend to be built.
+
+
+Core Features (v1): Upload résumé → AI scoring & feedback · Challenge catalog · Communities· Leaderboards · Social feed.
+3. Market  Summary
+The global self‑improvement (or personal development) market was valued at around USD 45.7 billion in 2024, and is projected to climb to approximately USD 90.5 billion by 2033, growing at a trajectory of ~7.9% CAGR Market Research Future+4Custom Market Insights+4Custom Market Insights+4. Alternatively, leading forecasts peg the personal development segment at about USD 48.4 billion in 2024, rising to USD 67.2 billion by 2030 (CAGR ~5.7%) Grand View Research, and another source estimates growth from USD 50.4 billion in 2024 to USD 86.5 billion by 2034 at 5.55% CAGR Precedence Research+1Market Research Future+1.
+ Key growth drivers include increasing awareness around mental wellness, demand for skill enhancement, the digitization of learning, and AI-driven personalization (e.g. coaching, challenges, and feedback) Custom Market Insights+6Grand View Research+6Market Research Future+6.
+Total Addressable Market (TAM)
+The global personal development industry is worth USD 48–50 billion in 2024 and expected to grow steadily in the next decade Custom Market Insights+6Grand View Research+6The Business Research Company+6.
+Serviceable Available Market (SAM)
+Focusing on university students aged 18–25 in the Netherlands at the moment, the SAM is estimated at around 6 million combined.
+Serviceable Obtainable Market (SOM)
+Targeting early adopters—those interested in productivity, career enhancement, and personal growth—the initial SOM is approximately 1 million users, primarily from student communities actively seeking structured self-improvement.
+4. Go-to-Market Plan
+Immediate MVP Launch: Rapidly deploy a beta version to early adopters to begin gathering essential user feedback.
+Iterative Feedback Loop: Continuously refine the product based on direct user insights and experiences to optimize the user journey.
+Aggressive Social Marketing: Launch intensive marketing campaigns, including daily reels and posts across key social media platforms, to build strong brand visibility and engagement.
+Campus Launch Events: Host campus events, workshops, and interactive sessions at target universities to boost initial user acquisition and visibility.
+University Partnerships: Establish strategic partnerships with universities, career centers, and student organizations to secure institutional endorsement and direct promotion.
+Referral Program: Implement a referral engine encouraging users to invite friends in exchange for platform incentives and rewards.
+Community Building: Actively 
+ Founder & CEO – Taksh Dange
+Backend Lead (Open) —
+Backend  Engineer(Open) —
+Frontend Developer experienced (Open) –
+Marketing Manager (Open) —
+Assistant Marketing Manager(Open) —
+
+Part B. Team Charter (Working Agreement)
+1. Purpose
+Building ELITESCORE into the go‑to platform for self‑improvement, starting with students..
+
+
+2. Roles & Responsibilities:
+To be decided
+3. Communication Norms
+Whatsapp / slack / discord
+Notion
+GitHub
+4.Meetings
+To be decided 
+
+Part C. Next Steps
+Finalize core team selection immediately.
+Clearly assign roles and responsibilities, host initial team meetings to align on tasks, timelines, and deliverables.
+Get the beta version ready and operational by the first week of August 2025.
+Initiate aggressive marketing efforts immediately to build awareness and anticipation for launch.
+Regularly review progress and maintain close communication within the team to ensure swift execution and responsiveness to user feedback.
+
+Prepared by Taksh Dange, 25 Jul 2025.
+

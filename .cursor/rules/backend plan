@@ -1,0 +1,82 @@
+
+ Backend Development Plan for Beta Release
+Target Beta Deadline: Second week of September (by Sep 14, 2025)
+ 1. Backend Architecture & Technology
+Why Microservices?
+We’re building a complex platform that includes user management, feeds/posts, goals, resume scoring, communities, notifications, search, and messaging. A single monolithic application would be challenging to scale and maintain. Microservices offer:
+Isolation: Issues or downtime in one component don't affect others.
+
+
+Scalability: Each component can scale independently.
+
+
+Maintainability: Easier debugging, testing, and updates.
+
+
+
+ Technology Stack (Aligned with Meeting Decisions):
+Layer
+Selected Technology
+Rationale & Benefits
+Backend Framework
+Jakarta EE (Java Enterprise Edition)
+Enterprise-grade stability, native WebSocket, async APIs, MicroProfile for microservices support.
+Database
+PostgreSQL
+Relational data integrity (user profiles, payments, communities) and JSONB for flexible structures.
+Real-time Communication
+Jakarta EE WebSockets
+Low-latency, bidirectional communication ideal for real-time notifications and updates.
+Messaging/Event Bus
+Apache Kafka
+Decoupling services via asynchronous messaging, reliable event-driven architecture.
+Caching & Pub/Sub
+Redis
+Fast in-memory caching (leaderboards, profiles), lightweight real-time notifications.
+Search Engine
+Elasticsearch
+Efficient, powerful full-text search and complex query support for users, posts, and groups.
+Authentication
+JWT Tokens
+Stateless, scalable authentication mechanism.
+Password Hashing
+Argon2
+Highly secure hashing algorithm recommended by OWASP standards.
+API Testing & Documentation
+Postman & OpenAPI (Swagger)
+Automated API tests via Postman collections, clear API documentation via OpenAPI specs.
+Infrastructure & Deployment
+Docker, Kubernetes (staging/prod), GitHub Actions (Education Pack)
+Consistent environment, rapid deployment, free CI/CD pipelines via GitHub Actions.
+
+
+ 2. Microservices Breakdown & Responsibilities
+Each microservice communicates via RESTful APIs, JWT-secured endpoints, and Kafka message events.
+Service
+Responsibilities
+Primary Database
+Auth & Users
+User registration, login, OAuth, profiles, security, follower relationships.
+PostgreSQL
+Posts & Feed
+Posts, achievements, likes, comments, attachments, real-time feed aggregation.
+MongoDB
+Goals & Challenges
+Goals management, XP scoring, task assignments, challenges and progress tracking.
+PostgreSQL
+Resume & Scoring
+Resume uploads, scoring (stubbed initially), future integration with AI/ML services.
+PostgreSQL
+Communities & Groups
+Community creation, memberships, announcements, leaderboards, chats.
+PostgreSQL
+Notifications
+Real-time notifications for comments, likes, follows, challenges.
+Redis
+Search
+Search functionality across posts, profiles, communities, and challenges.
+Elasticsearch
+
+
+
+

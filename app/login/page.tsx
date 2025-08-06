@@ -85,7 +85,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4 py-12 overflow-x-hidden">
       {/* App name at the top */}
       <div className="w-full flex justify-center pt-8 pb-4">
         <span className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">ELITESCORE</span>

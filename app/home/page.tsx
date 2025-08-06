@@ -41,7 +41,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { XPNotification } from "@/components/xp-notification"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
+import AnimatedCounter from "@/components/ui/animated-counter"
 import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { AnimatedSection } from "@/components/ui/animated-section"
 import {
@@ -299,7 +299,7 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-zinc-900/90 border border-blue-700/40 rounded-xl max-w-md w-full p-6 shadow-[0_0_32px_0_rgba(80,0,255,0.3)]"
+              className="bg-zinc-900/90 border border-blue-700/40 rounded-xl max-w-md w-full p-4 sm:p-6 shadow-[0_0_32px_0_rgba(80,0,255,0.3)]"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -382,10 +382,10 @@ export default function HomePage() {
         <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-radial from-fuchsia-500/15 via-blue-600/10 to-transparent rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-4 py-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 py-4 sm:py-6 relative z-10 overflow-x-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column - User Profile & Stats */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* User Profile Card */}
             <AnimatedSection delay={0.1}>
               <EnhancedCard variant="gradient" hover="lift" className="overflow-hidden bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
@@ -614,7 +614,7 @@ export default function HomePage() {
           </div>
 
           {/* Middle Column - Feed */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Create Post */}
             <AnimatedSection delay={0.2}>
               <EnhancedCard variant="default" hover="lift" className="bg-zinc-900/80 border border-blue-700/40 shadow-[0_0_24px_0_rgba(80,0,255,0.3)]">
@@ -633,14 +633,14 @@ export default function HomePage() {
                       />
                     </div>
                   </div>
-                  <div className="flex justify-between mt-4">
-                    <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row justify-between mt-4 gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <EnhancedButton
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800/80 border-blue-700/40 text-white hover:bg-zinc-700 hover:border-blue-500/50 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.3)]"
-                        leftIcon={<Image className="h-4 w-4" />}
+                        className="bg-zinc-800/80 border-blue-700/40 text-white hover:bg-zinc-700 hover:border-blue-500/50 hover:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] text-xs sm:text-sm"
+                        leftIcon={<Image className="h-3 w-3 sm:h-4 sm:w-4" />}
                       >
                         Photo
                       </EnhancedButton>
@@ -648,8 +648,8 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800/80 border-purple-700/40 text-white hover:bg-zinc-700 hover:border-purple-500/50 hover:shadow-[0_0_8px_0_rgba(147,51,234,0.3)]"
-                        leftIcon={<Award className="h-4 w-4" />}
+                        className="bg-zinc-800/80 border-purple-700/40 text-white hover:bg-zinc-700 hover:border-purple-500/50 hover:shadow-[0_0_8px_0_rgba(147,51,234,0.3)] text-xs sm:text-sm"
+                        leftIcon={<Award className="h-3 w-3 sm:h-4 sm:w-4" />}
                       >
                         Achievement
                       </EnhancedButton>
@@ -657,8 +657,8 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         rounded="full"
-                        className="bg-zinc-800/80 border-fuchsia-700/40 text-white hover:bg-zinc-700 hover:border-fuchsia-500/50 hover:shadow-[0_0_8px_0_rgba(217,70,239,0.3)]"
-                        leftIcon={<Link2 className="h-4 w-4" />}
+                        className="bg-zinc-800/80 border-fuchsia-700/40 text-white hover:bg-zinc-700 hover:border-fuchsia-500/50 hover:shadow-[0_0_8px_0_rgba(217,70,239,0.3)] text-xs sm:text-sm"
+                        leftIcon={<Link2 className="h-3 w-3 sm:h-4 sm:w-4" />}
                       >
                         Link
                       </EnhancedButton>
@@ -684,19 +684,19 @@ export default function HomePage() {
               <TabsList className="bg-zinc-900/80 border border-blue-700/40 rounded-lg p-1 mb-4 shadow-[0_0_16px_0_rgba(80,0,255,0.2)]">
                 <TabsTrigger
                   value="feed"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300 text-xs sm:text-sm px-2 sm:px-3"
                 >
                   Feed
                 </TabsTrigger>
                 <TabsTrigger
                   value="network"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300 text-xs sm:text-sm px-2 sm:px-3"
                 >
                   Network
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-white data-[state=active]:shadow-[0_0_8px_0_rgba(80,0,255,0.3)] rounded-md transition-all duration-300 text-xs sm:text-sm px-2 sm:px-3"
                 >
                   Achievements
                 </TabsTrigger>
@@ -711,7 +711,7 @@ export default function HomePage() {
                       hover="lift"
                       className="bg-zinc-900/80 border border-blue-700/40 overflow-hidden shadow-[0_0_24px_0_rgba(80,0,255,0.2)] hover:shadow-[0_0_32px_0_rgba(80,0,255,0.4)]"
                     >
-                      <EnhancedCardHeader className="p-4">
+                      <EnhancedCardHeader className="p-3 sm:p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-10 w-10 interactive">
@@ -740,7 +740,7 @@ export default function HomePage() {
                           </Button>
                         </div>
                       </EnhancedCardHeader>
-                      <EnhancedCardContent className="px-4 pb-2">
+                      <EnhancedCardContent className="px-3 sm:px-4 pb-2">
                         <p className="text-sm mb-3 text-white leading-relaxed">{post.content.text}</p>
 
                         {/* Achievement/Milestone Badge */}
@@ -792,7 +792,7 @@ export default function HomePage() {
                           </div>
                         )}
                       </EnhancedCardContent>
-                      <EnhancedCardFooter className="p-4 pt-0">
+                      <EnhancedCardFooter className="p-3 sm:p-4 pt-0">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center space-x-4">
                             <EnhancedButton
@@ -984,7 +984,7 @@ export default function HomePage() {
       </div>
 
       {/* Chat Button */}
-      <div className="fixed bottom-20 right-4 z-50">
+      <div className="fixed bottom-16 sm:bottom-20 right-4 z-50">
         <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
           <DialogTrigger asChild>
             <EnhancedButton

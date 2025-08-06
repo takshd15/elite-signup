@@ -25,29 +25,51 @@ const ThemeProviderContext = createContext(initialState)
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  attribute = "data-theme",
+  attribute = "class",
+  enableSystem = true,
   ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme)
+}: ThemeProviderProps & { enableSystem?: boolean }) {
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage on initial load
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme') as Theme
+      return stored || defaultTheme
+    }
+    return defaultTheme
+  })
 
   useEffect(() => {
     const root = window.document.documentElement
 
     root.classList.remove("light", "dark")
 
-    if (theme === "system") {
+    if (theme === "system" && enableSystem) {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
       root.classList.add(systemTheme)
-      return
+      
+      // Listen for system theme changes
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+      const handleChange = () => {
+        root.classList.remove("light", "dark")
+        const newTheme = mediaQuery.matches ? "dark" : "light"
+        root.classList.add(newTheme)
+      }
+      
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
     }
 
     root.classList.add(theme)
-  }, [theme])
+  }, [theme, enableSystem])
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      setTheme(theme)
+    setTheme: (newTheme: Theme) => {
+      setTheme(newTheme)
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('theme', newTheme)
+      }
     },
   }
 

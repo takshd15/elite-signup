@@ -1,21 +1,50 @@
 "use client"
 
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { motion } from "framer-motion"
+import { motion, useInView } from "framer-motion"
 import { ArrowRight, CheckCircle, Trophy, Users, BarChart2, Zap, Star, User } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { EnhancedCard } from "@/components/ui/enhanced-card"
-import { AnimatedSection } from "@/components/ui/animated-section"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+import { cn } from "@/lib/utils"
+
+// Remove lazy loading for now to debug performance
+// const AnimatedCounter = lazy(() => import("@/components/ui/animated-counter"))
+
+// Optimized animation variants with reduced motion support
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      when: "beforeChildren",
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+}
+
 // Testimonial data
 const testimonials = [
   {
     name: "Alex Johnson",
     role: "Software Engineer",
-    image: "/images/user-alex.png",
+    image: "/placeholder-user.jpg",
     content:
       "This app has transformed how I approach my career growth. The daily challenges keep me motivated, and seeing my progress on the leaderboard pushes me to improve consistently.",
     rating: 5,
@@ -23,7 +52,7 @@ const testimonials = [
   {
     name: "Sarah Williams",
     role: "Product Manager",
-    image: "/images/user-sarah.png",
+    image: "/placeholder-user.jpg",
     content:
       "I've tried many self-improvement apps, but this one stands out with its social features. Comparing my progress with peers has added a fun competitive element to my personal development.",
     rating: 5,
@@ -31,7 +60,7 @@ const testimonials = [
   {
     name: "Michael Chen",
     role: "Data Scientist",
-    image: "/images/user-michael.png",
+    image: "/placeholder-user.jpg",
     content:
       "The gamification elements make learning new skills actually enjoyable. I've completed more courses in the last month than I did all of last year!",
     rating: 4,
@@ -41,662 +70,681 @@ const testimonials = [
 // Feature data
 const features = [
   {
-    title: "Personalized Growth Tracking",
+    title: "GrowthScore™ Resume Analysis",
     description:
-      "Set crystal-clear goals, monitor your momentum, and watch your growth come alive through beautiful interactive dashboards.",
+      "Upload your résumé to receive an instant AI-powered GrowthScore™ and personalized feedback.",
     icon: BarChart2,
-    color: "from-purple-500 to-purple-700",
   },
   {
-    title: "Peer Benchmarking",
+    title: "Leaderboards & Community",
     description:
-      "Instantly see how you stack up against professionals like you, spot your skill gaps, and celebrate the wins that set you apart.",
+      "Benchmark against peers, climb leaderboards, and celebrate wins together.",
     icon: Users,
-    color: "from-fuchsia-500 to-fuchsia-700",
   },
   {
-    title: "Daily Challenges",
+    title: "Gamified Challenges",
     description:
-      "Ignite your routine with bite-sized, personalized challenges that push boundaries and forge unstoppable habits.",
+      "Transform goals into daily and monthly challenges that keep you motivated and consistent.",
     icon: Zap,
-    color: "from-pink-500 to-pink-600",
   },
   {
-    title: "Achievement System",
-    description: "Earn XP, unlock exclusive badges, and level up as you master new skills—because progress should feel like winning.",
+    title: "Data-Driven Insights",
+    description: "Interactive dashboards turn raw progress into actionable insights you can showcase.",
     icon: Trophy,
-    color: "from-violet-500 to-violet-700",
   },
 ]
 
 // Stats data
 const stats = [
-  { label: "Active Users", value: 25000 },
-  { label: "Goals Completed", value: 1250000 },
-  { label: "Skills Improved", value: 75000 },
-  { label: "Average Growth", value: 32 },
+  { label: "Active Users", value: 25000, suffix: "+" },
+  { label: "Goals Completed", value: 1250000, suffix: "" },
+  { label: "Skills Improved", value: 75000, suffix: "+" },
+  { label: "Average Growth", value: 32, suffix: "%" },
 ]
 
-export default function HomePage() {
+// Simple static background for better performance
+function SimpleBackground() {
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-black pb-24 pt-24 md:pt-32 md:pb-32">
-        {/* Background Elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-black" />
-          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-radial from-blue-500/40 via-purple-700/30 to-transparent rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -left-24 w-72 h-72 bg-gradient-radial from-purple-700/40 via-pink-600/30 to-transparent rounded-full blur-3xl" />
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute left-0 top-0 -z-10 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-400/10 blur-[120px]" />
+      <div className="absolute right-0 top-0 -z-10 h-[900px] w-[700px] rounded-full bg-gradient-to-bl from-purple-600/25 to-pink-500/15 blur-[110px]" />
         </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <AnimatedSection delay={0.2} className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="inline-block"
-              >
-                <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent text-base font-extrabold tracking-widest px-4 py-1 rounded-full border border-blue-700/40 shadow-[0_0_16px_0_rgba(80,0,255,0.4)] uppercase">
-                  ELITESCORE
-                </span>
-              </motion.div>
-              <motion.h1
-                className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-widest leading-tight bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_32px_rgba(80,0,255,0.5)] uppercase"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                UNLOCK YOUR POTENTIAL<br />
-                <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent animate-gradient-x">
-                  SEE HOW YOU STACK UP
-                </span>
-              </motion.h1>
-              <motion.p
-                className="text-xl md:text-2xl text-white max-w-xl leading-relaxed drop-shadow-[0_0_8px_rgba(80,0,255,0.3)]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-              >
-                Turn ambition into action. Tackle tailored challenges, track your progress in real time, and grow inside a community that fuels your success. Benchmark your journey against top performers and unlock data-driven insights that accelerate your rise.
-              </motion.p>
+  )
+}
 
-              {/* Key Benefits Section */}
-              <motion.div
-                className="mt-8 grid grid-cols-1 gap-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-              >
-                {[
-                  { icon: Trophy, text: "Upload your resume & get instant skill diagnostics" },
-                  { icon: Users, text: "See exactly where you rank among your peers" },
-                  { icon: BarChart2, text: "Receive razor-sharp insights that speed up your growth" },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-[0_0_12px_0_rgba(80,0,255,0.4)]">
-                      <item.icon className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-base text-white font-medium tracking-wide">{item.text}</span>
-                  </div>
-                ))}
-              </motion.div>
+// Interactive stat card component with enhanced animations
+function StatCard({ stat, index }: { stat: typeof stats[0], index: number }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const [isHovered, setIsHovered] = useState(false)
+  const [count, setCount] = useState(0)
+  
+  // Animate the counter when in view
+  useEffect(() => {
+    if (isInView) {
+      const duration = 2000 // 2 seconds
+      const steps = 60
+      const increment = stat.value / steps
+      let current = 0
+      
+      const timer = setInterval(() => {
+        current += increment
+        if (current >= stat.value) {
+          setCount(stat.value)
+          clearInterval(timer)
+        } else {
+          setCount(Math.floor(current))
+        }
+      }, duration / steps)
+      
+      return () => clearInterval(timer)
+    }
+  }, [isInView, stat.value])
+  
+  return (
+    <motion.div
+      ref={ref}
+      className="relative group cursor-pointer"
+      initial={{ opacity: 0, y: 50, scale: 0.8 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.8 }}
+      transition={{ 
+        duration: 0.6, 
+        delay: index * 0.15,
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      whileHover={{ 
+        scale: 1.05,
+        y: -5,
+        transition: { duration: 0.2 }
+      }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 rounded-2xl border border-white/10 group-hover:border-white/20 transition-all duration-300"
+        animate={{
+          boxShadow: isHovered 
+            ? "0 0 30px rgba(43, 188, 255, 0.3)" 
+            : "0 0 0px rgba(43, 188, 255, 0)"
+        }}
+        transition={{ duration: 0.3 }}
+      />
+      
+      <div className="relative p-6">
+        <motion.div 
+          className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent"
+          animate={{
+            scale: isHovered ? [1, 1.05, 1] : 1,
+          }}
+          transition={{
+            duration: 0.5,
+            repeat: isHovered ? Infinity : 0,
+          }}
+        >
+          {count.toLocaleString()}{stat.suffix}
+        </motion.div>
+        
+        <motion.div 
+          className="text-lg text-zinc-300 mt-2 font-medium"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ delay: index * 0.2 + 0.3 }}
+        >
+          {stat.label}
+        </motion.div>
+        
+        <motion.div 
+          className="mt-4 w-full bg-white/10 rounded-full h-1 overflow-hidden"
+          initial={{ scaleX: 0 }}
+          animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+          transition={{ duration: 1, delay: index * 0.2 + 0.5 }}
+        >
+          <motion.div 
+            className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] h-1 rounded-full"
+            initial={{ width: 0 }}
+            animate={isInView ? { 
+              width: `${Math.min(100, (stat.value / 1000000) * 100)}%` 
+            } : { width: 0 }}
+            transition={{ 
+              duration: 1.5, 
+              delay: index * 0.2 + 0.8,
+              ease: "easeOut"
+            }}
+            style={{
+              boxShadow: isHovered 
+                ? "0 0 10px rgba(43, 188, 255, 0.5)" 
+                : "none"
+            }}
+          />
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
 
-              <motion.div
-                className="flex flex-col sm:flex-row gap-6 pt-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-              >
-                <EnhancedButton
-                  size="lg"
-                  variant="gradient"
-                  rounded="full"
-                  animation="shimmer"
-                  className="text-lg font-bold group relative overflow-hidden bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 border-2 border-blue-700/40 shadow-[0_0_32px_0_rgba(80,0,255,0.5)] focus-visible:ring-4 focus-visible:ring-fuchsia-500/60 transition-transform duration-200 hover:scale-105"
+
+
+// Simple wrapper without parallax for better performance
+function SimpleSection({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
+}
+
+export default function HomePage() {
+  // Removed heavy scroll animations for better performance
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden">
+
+      
+      {/* App name at the top */}
+      <motion.div 
+        className="w-full flex justify-center pt-8 pb-6 relative z-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <span className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
+          ELITESCORE
+        </span>
+      </motion.div>
+
+      {/* Simple Background */}
+      <SimpleBackground />
+
+            {/* Hero Section */}
+      <section className="relative py-20 px-4">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div 
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[60vh] lg:min-h-[70vh]"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className="space-y-8 lg:space-y-12 text-center lg:text-left" variants={itemVariants}>
+              <div className="space-y-6 lg:space-y-8">
+                <motion.div 
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-blue-300 text-sm font-medium"
+                  whileHover={{ scale: 1.05, borderColor: "rgba(59, 130, 246, 0.5)" }}
+                  transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <Link href="/signup" className="flex items-center">
-                    Start Your Journey
-                    <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </EnhancedButton>
-
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-blue-700/40 hover:bg-blue-900 text-lg text-white shadow-[0_0_12px_0_rgba(80,0,255,0.2)] focus-visible:ring-4 focus-visible:ring-blue-500/60 transition-transform duration-200 hover:scale-105"
-                  asChild
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    Beta Launch - Limited Spots Available
+                </motion.div>
+                
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-widest uppercase leading-tight">
+                  <span className="bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
+                    UNLOCK YOUR
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-[#a259ff] to-[#2bbcff] bg-clip-text text-transparent">
+                    POTENTIAL
+                  </span>
+                  </h1>
+                
+                <p className="text-lg sm:text-xl md:text-2xl text-zinc-200 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                  Upload your résumé to receive your personalized GrowthScore™, tackle gamified challenges, and rise through the leaderboard with your peers.
+                </p>
+                
+                {/* Social proof with hover effect */}
+                <motion.div 
+                  className="flex items-center gap-4 text-sm text-zinc-400 justify-center lg:justify-start"
+                  whileHover={{ x: 5 }}
                 >
-                  <Link href="#how-it-works" className="flex items-center">
-                    <span>See Peer Progress</span>
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 group-hover:w-full transition-all duration-300"></span>
-                  </Link>
-                </Button>
-              </motion.div>
-
-              <motion.div
-                className="flex items-center gap-3 pt-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.8 }}
-              >
-                <div className="flex -space-x-2">
-                  {["alex", "sarah", "michael", "emily"].map((name) => (
-                    <div key={name} className="w-9 h-9 rounded-full border-2 border-blue-700/40 overflow-hidden shadow-[0_0_8px_0_rgba(80,0,255,0.3)]">
-                      <Image
-                        src={`/images/user-${name}.png`}
-                        alt={`EliteScore user ${name}`}
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "w-8 h-8 rounded-full border-2 border-black",
+                          i === 1 && "bg-gradient-to-r from-blue-400 to-purple-400",
+                          i === 2 && "bg-gradient-to-r from-purple-400 to-pink-400",
+                          i === 3 && "bg-gradient-to-r from-cyan-400 to-blue-400"
+                        )}
                       />
-                    </div>
+                    ))}
+                  </div>
+                  <span>Join 2,500+ students already leveling up</span>
+                </motion.div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    size="lg"
+                      className="py-4 sm:py-5 px-8 sm:px-10 rounded-2xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_40px_rgba(43,188,255,0.5)] relative overflow-hidden group"
+                    asChild
+                  >
+                      <Link href="/signup" className="flex items-center text-base sm:text-lg relative z-10">
+                      <span className="relative z-10">Start Your Journey</span>
+                      <ArrowRight className="ml-3 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#a259ff] to-[#2bbcff] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </Link>
+                  </Button>
+                  </motion.div>
+                  
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                      className="py-4 sm:py-5 px-8 sm:px-10 rounded-2xl font-bold border-zinc-600 text-white hover:bg-zinc-800/50 hover:border-zinc-500 transition-all duration-300"
+                    asChild
+                  >
+                      <Link href="#how-it-works" className="text-base sm:text-lg">Learn More</Link>
+                  </Button>
+                  </motion.div>
+                </div>
+                
+                {/* Trust indicators */}
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-zinc-400 justify-center lg:justify-start">
+                  {["No credit card required", "Free beta access", "2-minute setup"].map((text, i) => (
+                    <motion.div
+                      key={text}
+                      className="flex items-center gap-2"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + i * 0.1 }}
+                    >
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                      <span>{text}</span>
+                    </motion.div>
                   ))}
                 </div>
-                <div className="text-base text-white font-medium">
-                  <span className="text-white font-bold">25,000+</span> people growing together
-                </div>
-              </motion.div>
-            </AnimatedSection>
-
-            {/* Logo on the right side */}
-            <AnimatedSection delay={0.4} className="flex items-center justify-center h-full">
-              <div className="flex flex-col items-center justify-center w-full h-full">
-                <Image
-                  src="/Annotation 2025-07-18 034118.png"
-                  alt="EliteScore logo with neon gradient ring"
-                  width={560}
-                  height={560}
-                  className="object-contain max-w-[420px] md:max-w-[500px] lg:max-w-[560px] w-full h-auto mx-auto my-8 md:my-0 drop-shadow-[0_0_120px_rgba(80,0,255,0.5)]"
-                  priority
-                />
               </div>
-            </AnimatedSection>
+              </motion.div>
+
+            <SimpleSection>
+                          <motion.div 
+              className="flex items-center justify-center relative"
+              variants={itemVariants}
+            >
+              <div className="relative">
+                {/* Enhanced background effects */}
+                  <div className="absolute inset-0 bg-black/50 rounded-full blur-3xl"></div>
+                  
+                
+                
+                <Image
+                  src="/ChatGPT Image Aug 5, 2025, 07_26_16 AM.png"
+                  alt="EliteScore logo with high-quality gradient dotted ring"
+                  width={700}
+                  height={700}
+                    className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
+                  priority
+                  quality={100}
+                    loading="eager"
+                />
+                
+                
+              </div>
+            </motion.div>
+            </SimpleSection>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Enhanced Stats Section with Scroll Animations */}
+      <section className="py-16 sm:py-20 px-4 relative">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+                          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
+              Join the Movement
+            </h2>
+                          <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+              See what our community has already achieved
+            </p>
+          </motion.div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+            {stats.map((stat, index) => (
+              <StatCard key={index} stat={stat} index={index} />
+            ))}
           </div>
+          
+          {/* Live indicator */}
+          <motion.div
+            className="text-center mt-12"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 text-sm font-medium"
+              whileHover={{ scale: 1.05, borderColor: "rgba(34, 197, 94, 0.5)" }}
+            >
+              <motion.div 
+                className="w-2 h-2 bg-green-400 rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [1, 0.5, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              />
+              Live Community - Join Now
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-30 my-8 rounded-full" />
-
-      {/* Social Proof */}
-      <section className="py-16 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2}>
-            <div className="flex flex-wrap justify-between items-center gap-12">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent animate-gradient-x drop-shadow-[0_0_32px_rgba(80,0,255,0.5)]">
-                    <AnimatedCounter
-                      from={0}
-                      to={stat.value}
-                      duration={2}
-                      delay={0.5 + index * 0.1}
-                    />
-                  </div>
-                  <div className="text-base text-white mt-1 font-medium tracking-wide">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* Features */}
-      <section id="features" className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2} className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
+      {/* Features Section with Hover Effects */}
+      <section id="features" className="py-16 sm:py-20 px-4">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
               How It Works
             </h2>
-            <p className="text-white text-xl font-medium">
+            <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
               Our platform combines powerful tracking tools, social elements, and gamification to create a uniquely effective self-improvement experience.
             </p>
-          </AnimatedSection>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
             {features.map((feature, index) => (
-              <AnimatedSection key={index} delay={0.3 + index * 0.1}>
-                <EnhancedCard variant="default" hover="lift" className="h-full bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                  <div className="p-8 space-y-5">
-                    <div
-                      className={`w-14 h-14 rounded-lg bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-[0_0_16px_0_rgba(80,0,255,0.4)]`}
-                    >
-                      <feature.icon className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
+              <SimpleSection key={index}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Card className="shadow-2xl rounded-2xl border-zinc-700 bg-card/90 backdrop-blur-lg hover:shadow-[0_0_30px_rgba(43,188,255,0.2)] transition-all duration-300 h-full">
+                  <CardHeader>
+                        <motion.div 
+                          className="w-16 h-16 rounded-full bg-gradient-to-r from-[#2bbcff] to-[#a259ff] flex items-center justify-center mb-6"
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                      <feature.icon className="h-8 w-8 text-white" />
+                        </motion.div>
+                        <CardTitle className="text-lg sm:text-xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
                       {feature.title}
-                    </h3>
-                    <p className="text-white text-base font-medium leading-relaxed">
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                        <CardDescription className="text-zinc-400 text-sm sm:text-base">
                       {feature.description}
-                    </p>
-                  </div>
-                </EnhancedCard>
-              </AnimatedSection>
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </motion.div>
+                </motion.div>
+              </SimpleSection>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2} className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
+      {/* How It Works Section with Timeline */}
+      <section id="how-it-works" className="py-16 sm:py-20 px-4">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
               Your Path to Improvement
             </h2>
-            <p className="text-white text-xl font-medium">
+            <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
               Follow these simple steps to start tracking your progress, competing with peers, and achieving your goals.
             </p>
-          </AnimatedSection>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             {[
               {
                 step: "1",
-                title: "Create Your Profile",
-                description: "Create your profile and upload your resume for an instant skills snapshot.",
+                title: "Upload Résumé & Get GrowthScore™",
+                description: "Upload your résumé and receive an instant AI-powered GrowthScore™ plus personalized feedback.",
                 icon: User,
-                color: "from-blue-500 to-purple-500",
               },
               {
                 step: "2",
-                title: "Accept Challenges",
-                description: "Dive into daily and weekly challenges engineered to stretch your limits.",
+                title: "Set Goals & Challenges",
+                description: "Transform your goals into daily and monthly challenges that keep you motivated and consistent.",
                 icon: Zap,
-                color: "from-purple-500 to-fuchsia-500",
               },
               {
                 step: "3",
-                title: "Track Progress",
-                description: "See your momentum in real time and discover exactly how you measure up.",
+                title: "Benchmark & Track Progress",
+                description: "Benchmark your GrowthScore™ against peers and track momentum in real time.",
                 icon: BarChart2,
-                color: "from-blue-500 to-fuchsia-500",
               },
               {
                 step: "4",
-                title: "Earn & Grow",
-                description: "Collect XP, unlock prestige badges, and convert insights into real-world success.",
+                title: "Celebrate & Share Achievements",
+                description: "Collect XP, unlock prestige badges, and showcase your improvements to employers.",
                 icon: Trophy,
-                color: "from-purple-500 to-blue-500",
               },
             ].map((item, index) => (
-              <AnimatedSection key={index} delay={0.3 + index * 0.1}>
-                <div className="relative">
-                  <div
-                    className={`absolute -top-2 -left-2 w-11 h-11 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-bold shadow-[0_0_12px_0_rgba(80,0,255,0.4)]`}
-                  >
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <motion.div whileHover={{ y: -10 }} transition={{ type: "spring", stiffness: 300 }}>
+                  <Card className="shadow-2xl rounded-2xl border-zinc-700 bg-card/90 backdrop-blur-lg relative hover:shadow-[0_0_30px_rgba(43,188,255,0.2)] transition-all duration-300 h-full">
+                    <motion.div 
+                      className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-gradient-to-r from-[#2bbcff] to-[#a259ff] flex items-center justify-center text-white font-bold text-lg"
+                      whileHover={{ scale: 1.2, rotate: 360 }}
+                      transition={{ duration: 0.3 }}
+                    >
                     {item.step}
-                  </div>
-                  <EnhancedCard variant="default" hover="lift" className="pt-8 h-full bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                    <div className="p-8 space-y-5">
-                      <div
-                        className={`w-14 h-14 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shadow-[0_0_16px_0_rgba(80,0,255,0.4)]`}
-                      >
-                        <item.icon className="h-7 w-7 text-white" />
-                      </div>
-                      <h3 className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
-                        {item.title}
-                      </h3>
-                      <p className="text-white text-base font-medium leading-relaxed">
-                        {item.description}
-                      </p>
+                    </motion.div>
+                  <CardHeader className="pt-10">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#2bbcff] to-[#a259ff] flex items-center justify-center mb-6">
+                      <item.icon className="h-6 w-6 text-white" />
                     </div>
-                  </EnhancedCard>
-                </div>
-              </AnimatedSection>
+                      <CardTitle className="text-lg sm:text-xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
+                      {item.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <CardDescription className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                      {item.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+                </motion.div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* App Screenshots Section */}
-      <section className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2} className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
-              Experience The App
-            </h2>
-            <p className="text-white text-xl font-medium">
-              Take a look at how our platform helps users track progress, compete with peers, and achieve their goals faster.
-            </p>
-          </AnimatedSection>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-            <AnimatedSection delay={0.3}>
-              <EnhancedCard variant="default" hover="lift" className="overflow-hidden bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                <div className="p-6">
-                  <h3 className="text-xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
-                    Personal Dashboard
-                  </h3>
-                  <p className="text-white text-base font-medium">
-                    Track your progress and see your growth metrics at a glance
-                  </p>
-                  <div className="rounded-lg overflow-hidden border border-blue-700/40">
-                    <Image
-                      src="/images/app-dashboard.png"
-                      alt="EliteScore dashboard screenshot"
-                      width={400}
-                      height={800}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                </div>
-              </EnhancedCard>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.4}>
-              <EnhancedCard variant="default" hover="lift" className="overflow-hidden bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                <div className="p-6">
-                  <h3 className="text-xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
-                    Challenge Center
-                  </h3>
-                  <p className="text-white text-base font-medium">Browse and join challenges to accelerate your growth</p>
-                  <div className="rounded-lg overflow-hidden border border-blue-700/40">
-                    <Image
-                      src="/images/app-challenges.png"
-                      alt="EliteScore challenges screenshot"
-                      width={400}
-                      height={800}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                </div>
-              </EnhancedCard>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.5}>
-              <EnhancedCard variant="default" hover="lift" className="overflow-hidden bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                <div className="p-6">
-                  <h3 className="text-xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
-                    Profile & Achievements
-                  </h3>
-                  <p className="text-white text-base font-medium">Showcase your progress and earned achievements</p>
-                  <div className="rounded-lg overflow-hidden border border-blue-700/40">
-                    <Image
-                      src="/images/app-profile.png"
-                      alt="EliteScore profile screenshot"
-                      width={400}
-                      height={800}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                </div>
-              </EnhancedCard>
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* Interface Showcase */}
-      <section className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2} className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
-              Intuitive Interface
-            </h2>
-            <p className="text-white text-xl font-medium">
-              Our carefully designed interface makes tracking your progress and connecting with others seamless and enjoyable.
-            </p>
-          </AnimatedSection>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <AnimatedSection delay={0.3}>
-              <div className="space-y-8">
-                <h3 className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
-                  Real-time Progress Tracking
-                </h3>
-                <p className="text-white text-base font-medium">
-                  Watch your progress unfold in real-time with interactive charts and visualizations that make data meaningful and motivating.
-                </p>
-
-                <ul className="space-y-3">
-                  {[
-                    "Customizable dashboard widgets",
-                    "Daily, weekly, and monthly progress views",
-                    "Comparative analytics with peers",
-                    "Milestone celebration notifications",
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
-                      <span className="text-white text-base">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button variant="outline" className="mt-2 border-blue-700/40 hover:bg-blue-900 text-white shadow-[0_0_8px_0_rgba(80,0,255,0.2)] focus-visible:ring-4 focus-visible:ring-blue-500/60 transition-transform duration-200 hover:scale-105">
-                  Learn More
-                </Button>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.4}>
-              <EnhancedCard variant="default" className="overflow-hidden bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30">
-                <div className="relative aspect-[4/3] w-full">
-                  <Image
-                    src="/images/app-analytics.png"
-                    alt="EliteScore analytics dashboard screenshot"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-sm text-white bg-black/50 backdrop-blur-sm p-2 rounded">
-                      Interactive analytics dashboard showing progress across multiple skill areas
-                    </p>
-                  </div>
-                </div>
-              </EnhancedCard>
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* Community & Ethical Growth */}
-      <section className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
-            <AnimatedSection delay={0.3}>
-              <div className="space-y-8">
-                <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
-                  Growth, Not Just Competition
-                </h2>
-                <p className="text-white text-base font-medium">
-                  While we encourage healthy competition, our platform focuses on sustainable improvement and balanced personal development.
-                </p>
-
-                <div className="space-y-5 mt-10">
-                  <div className="bg-zinc-900/95 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 rounded-lg p-6">
-                    <h3 className="text-lg font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-2 tracking-tight">
-                      Measure Your Growth, Not Just Your Score
-                    </h3>
-                    <p className="text-white text-base font-medium">
-                      Our metrics focus on your personal improvement journey rather than pure numerical comparisons.
-                    </p>
-                  </div>
-
-                  <div className="bg-zinc-900/95 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 rounded-lg p-6">
-                    <h3 className="text-lg font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-2 tracking-tight">Supportive Community</h3>
-                    <p className="text-white text-base font-medium">
-                      Connect with mentors, join group challenges, and build a network that supports your goals.
-                    </p>
-                  </div>
-
-                  <div className="bg-zinc-900/95 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 rounded-lg p-6">
-                    <h3 className="text-lg font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-2 tracking-tight">Digital Well-being</h3>
-                    <p className="text-white text-base font-medium">
-                      We encourage balanced engagement with reminder systems and healthy achievement patterns.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.4}>
-              <div className="relative">
-                <EnhancedCard variant="default" className="overflow-hidden bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30">
-                  <div className="p-8">
-                    <h3 className="text-2xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">Community Leaderboard</h3>
-                    <div className="space-y-5">
-                      {[
-                        { name: "Alex J.", field: "Software Engineering", xp: 1250, growth: 27 },
-                        { name: "Maya T.", field: "Product Management", xp: 1180, growth: 32 },
-                        { name: "Carlos R.", field: "Data Science", xp: 1120, growth: 25 },
-                        { name: "Priya K.", field: "UX Design", xp: 1050, growth: 30 },
-                      ].map((user, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-zinc-800/80 rounded-lg">
-                          <div className="flex items-center gap-4">
-                            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 text-white font-bold text-lg shadow-[0_0_8px_0_rgba(80,0,255,0.3)]">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <div className="font-bold text-white text-lg">{user.name}</div>
-                              <div className="text-sm text-blue-300 font-medium">{user.field}</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-white text-lg">{user.xp} XP</div>
-                            <div className="text-xs text-pink-400 font-medium">+{user.growth}% growth</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-6 text-center p-4 border border-dashed border-blue-700/40 rounded-lg">
-                      <p className="text-white text-base font-medium">See where you stand and get inspired by others' progress</p>
-                    </div>
-                  </div>
-                </EnhancedCard>
-              </div>
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* Testimonials */}
-      <section className="py-24 bg-black">
-        <div className="container mx-auto px-4">
-          <AnimatedSection delay={0.2} className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
+      {/* Testimonials Section with Carousel Effect */}
+      <section className="py-16 sm:py-20 px-4 overflow-hidden">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
               What Our Users Say
             </h2>
-            <p className="text-white text-xl font-medium">
+            <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
               Join thousands of professionals who are accelerating their growth with our platform.
             </p>
-          </AnimatedSection>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
             {testimonials.map((testimonial, index) => (
-              <AnimatedSection key={index} delay={0.3 + index * 0.1}>
-                <EnhancedCard variant="default" hover="lift" className="h-full bg-zinc-900/90 bg-opacity-80 backdrop-blur-lg border border-blue-700/40 shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:scale-105 hover:shadow-[0_0_32px_0_rgba(80,0,255,0.5)]">
-                  <div className="p-8 space-y-5">
-                    <div className="flex items-center gap-2 mb-4">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="h-full"
+                >
+                <Card className="shadow-2xl rounded-2xl border-zinc-700 bg-card/90 backdrop-blur-lg h-full hover:shadow-[0_0_30px_rgba(43,188,255,0.2)] transition-all duration-300">
+                    <CardContent className="p-6 sm:p-8 flex flex-col h-full">
+                    <div className="flex items-center gap-2 mb-6">
                       {[...Array(5)].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.1 + i * 0.05 }}
+                          >
                         <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < testimonial.rating ? "text-yellow-500 fill-yellow-500" : "text-white"}`}
-                        />
+                              className={cn(
+                                "h-5 w-5 transition-colors",
+                                i < testimonial.rating 
+                                  ? "text-yellow-400 fill-yellow-400" 
+                                  : "text-zinc-600"
+                              )}
+                            />
+                          </motion.div>
                       ))}
                     </div>
-                    <p className="text-white italic text-base font-medium">"{testimonial.content}"</p>
-                    <div className="flex items-center gap-4 pt-4">
-                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-700/40">
+                      <p className="text-zinc-300 italic text-sm sm:text-base leading-relaxed mb-6 flex-grow">
+                        "{testimonial.content}"
+                      </p>
+                    <div className="flex items-center gap-4">
+                        <motion.div 
+                          className="w-12 h-12 rounded-full overflow-hidden border-2 border-zinc-700"
+                          whileHover={{ scale: 1.1, borderColor: "rgba(43, 188, 255, 0.5)" }}
+                        >
                         <Image
-                          src={`/images/user-${testimonial.name.split(" ")[0].toLowerCase()}.png`}
+                            src={testimonial.image}
                           alt={`EliteScore testimonial user ${testimonial.name}`}
                           width={48}
                           height={48}
                           className="w-full h-full object-cover"
+                            loading="lazy"
                         />
-                      </div>
+                        </motion.div>
                       <div>
-                        <div className="font-bold text-white text-lg">{testimonial.name}</div>
-                        <div className="text-sm text-blue-300 font-medium">{testimonial.role}</div>
+                          <div className="font-bold text-white text-sm sm:text-base">{testimonial.name}</div>
+                          <div className="text-xs sm:text-sm text-zinc-400">{testimonial.role}</div>
                       </div>
                     </div>
-                  </div>
-                </EnhancedCard>
-              </AnimatedSection>
+                  </CardContent>
+                </Card>
+                </motion.div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-1 bg-gradient-to-r from-blue-700 via-purple-700 to-fuchsia-500 opacity-20 my-8 rounded-full" />
-
-      {/* CTA */}
-      <section className="py-24 bg-black relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-black" />
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <AnimatedSection delay={0.2} className="max-w-3xl mx-auto text-center">
-            <h2 className="text-5xl md:text-6xl font-extrabold mb-8 bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(80,0,255,0.4)] tracking-tight">
-              Ready to See How You Stack Up?
+      {/* CTA Section with Animated Background */}
+      <section className="py-16 sm:py-20 px-4 relative overflow-hidden">
+        <motion.div 
+          className="absolute inset-0 opacity-20"
+          animate={{
+            backgroundImage: [
+              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
+              "radial-gradient(circle at 80% 50%, #a259ff 0%, transparent 50%)",
+              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
+            ],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        
+        <div className="container mx-auto max-w-5xl px-4 relative z-10">
+          <motion.div 
+            className="text-center space-y-8 sm:space-y-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
+              Ready to Raise Your GrowthScore™?
             </h2>
-            <p className="text-white text-xl font-medium mb-12">
-              Join our community of achievers and discover where you stand. Compare your skills, track real improvements, and grow faster with data-driven insights.
+              <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
+              Secure your beta spot now, race friends up the leaderboard, and claim an exclusive OG badge before launch.
             </p>
+            </div>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <EnhancedButton
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
                 size="lg"
-                variant="gradient"
-                rounded="full"
-                animation="shimmer"
-                className="text-lg font-bold relative overflow-hidden group bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 border-2 border-blue-700/40 shadow-[0_0_32px_0_rgba(80,0,255,0.5)] focus-visible:ring-4 focus-visible:ring-fuchsia-500/60 transition-transform duration-200 hover:scale-105"
+                  className="py-4 px-8 rounded-2xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_30px_rgba(43,188,255,0.4)] transition-all duration-300"
+                asChild
               >
-                <Link href="/signup" className="flex items-center">
+                  <Link href="/signup" className="flex items-center text-base sm:text-lg">
                   Unlock Your Potential
-                  <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              </EnhancedButton>
-
-              <Button size="lg" variant="outline" className="border-blue-700/40 hover:bg-blue-900 text-lg text-white shadow-[0_0_12px_0_rgba(80,0,255,0.2)] focus-visible:ring-4 focus-visible:ring-blue-500/60 transition-transform duration-200 hover:scale-105" asChild>
-                <Link href="/login">Sign In</Link>
               </Button>
+              </motion.div>
+              
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="py-4 px-8 rounded-2xl font-bold border-zinc-600 text-white hover:bg-zinc-800/50 hover:border-zinc-500 transition-all duration-300"
+                asChild
+              >
+                  <Link href="/login" className="text-base sm:text-lg">Sign In</Link>
+              </Button>
+            </motion.div>
             </div>
 
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div className="flex flex-col items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-blue-400" />
-                <span className="text-white text-base font-medium">No credit card required</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-blue-400" />
-                <span className="text-white text-base font-medium">Focused on balanced growth</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-blue-400" />
-                <span className="text-white text-base font-medium">Actionable peer comparisons</span>
-              </div>
-            </div>
-          </AnimatedSection>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              {["No credit card required", "Focused on balanced growth", "Actionable peer comparisons"].map((text, i) => (
+                <motion.div 
+                  key={text}
+                  className="flex flex-col items-center gap-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                <CheckCircle className="h-6 w-6 text-green-400" />
+                  <span className="text-sm sm:text-base text-zinc-300 font-medium">{text}</span>
+              </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
       </section>
+
+
     </div>
   )
 }
-

@@ -5,10 +5,27 @@ try {
   // ignore error
 }
 
-/** @type {import'next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     domains: ['images.unsplash.com'],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  swcMinify: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  // Performance optimizations
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
   },
 };
 

@@ -1,12 +1,17 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "elite-signup",
+  "version": "1.0.0",
+  "description": "EliteScore - Personalized career development platform with AI-powered insights and gamified challenges",
+  "author": "Your Name",
   "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "lint:fix": "next lint --fix",
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "preview": "next build && next start"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

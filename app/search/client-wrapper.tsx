@@ -8,7 +8,7 @@ export default function SearchClientWrapper() {
   return (
     <Suspense 
       fallback={
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white overflow-x-hidden">
           <div className="max-w-6xl mx-auto px-4 py-8 space-y-4">
             <Skeleton className="h-14 w-full bg-zinc-800/50 rounded-xl" />
             <Skeleton className="h-12 w-full bg-zinc-800/50 rounded-xl" />

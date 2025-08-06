@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function MentorshipLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
+    <div className="flex flex-col min-h-screen bg-black text-white overflow-x-hidden">
       {/* Header Skeleton */}
       <div className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/90 backdrop-blur-lg">
         <div className="container h-16 flex items-center justify-between">

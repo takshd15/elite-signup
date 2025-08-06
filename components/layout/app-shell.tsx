@@ -22,7 +22,7 @@ export function AppShell({
   className,
 }: AppShellProps) {
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
+    <div className="flex flex-col min-h-screen bg-black text-white overflow-x-hidden">
       {/* Header */}
       <SiteHeader title={title} showBackButton={showBackButton} backUrl={backUrl} rightElement={rightElement} />
 

@@ -26,7 +26,7 @@ export function DashboardLayout({ children, showBottomNav = true, showFooter = t
   }
 
   return (
-    <div className={`min-h-screen flex flex-col bg-black text-white ${theme}`}>
+    <div className={`min-h-screen flex flex-col bg-black text-white ${theme} overflow-x-hidden`}>
       <EnhancedNav theme={theme} onThemeToggle={toggleTheme} />
 
       <motion.main

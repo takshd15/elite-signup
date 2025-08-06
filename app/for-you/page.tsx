@@ -43,7 +43,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
+import AnimatedCounter from "@/components/ui/animated-counter"
 import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { AnimatedSection } from "@/components/ui/animated-section"
 import {
@@ -169,7 +169,7 @@ export default function ForYouPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col min-h-screen bg-black text-white relative">
+      <div className="flex flex-col min-h-screen bg-black text-white relative overflow-x-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-black" />

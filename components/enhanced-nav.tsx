@@ -49,7 +49,6 @@ export function EnhancedNav({ theme = "dark", onThemeToggle }: EnhancedNavProps)
     { label: "Explore", href: "/search" },
     { label: "Goals", href: "/goals" },
     { label: "Communities", href: "/for-you" },
-    { label: "Improve", href: "/improve" },
   ]
 
   const isActive = (path: string) => {
@@ -57,8 +56,8 @@ export function EnhancedNav({ theme = "dark", onThemeToggle }: EnhancedNavProps)
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/90 backdrop-blur-lg">
-      <div className="container h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/90 backdrop-blur-lg overflow-x-hidden">
+      <div className="container h-16 flex items-center justify-between px-4">
         {/* Logo */}
         <Link href={isLoggedIn ? "/home" : "/"} className="flex items-center gap-2">
           <motion.div

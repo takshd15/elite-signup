@@ -4,7 +4,7 @@ import { AppShell } from "@/components/layout/app-shell"
 export default function GoalsLoading() {
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 overflow-x-hidden">
         {/* Hero Section Skeleton */}
         <div className="mb-10 text-center max-w-3xl mx-auto">
           <Skeleton className="h-10 w-3/4 mx-auto mb-3" />
