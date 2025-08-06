@@ -359,13 +359,13 @@ const getAIRecommendations = (userProfile: any, searchHistory: string[]) => {
       type: "person",
       reason: "Similar academic background and career goals",
       confidence: 95,
-      item: users[0],
+      item: users[0] || null,
     },
     {
       type: "community",
       reason: "Matches your interests in AI and machine learning",
       confidence: 88,
-      item: communities[0],
+      item: communities[0] || null,
     },
     {
       type: "opportunity",

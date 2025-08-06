@@ -165,7 +165,7 @@ export default function ForYouPage() {
   const [activeTab, setActiveTab] = useState('announcements')
   const [searchQuery, setSearchQuery] = useState('')
   
-  const community = communities.find((c) => c.id === selectedCommunity) || communities[0]
+  const community = communities.find((c) => c.id === selectedCommunity) || communities[0] || null
 
   return (
     <DashboardLayout>
