@@ -98,6 +98,11 @@ public class AuthCORSFilter implements Filter {
             return;
         }
 
+        if(path.startsWith(request.getContextPath() + "/v1/status")) {
+            chain.doFilter(new SanitizedRequest(request), res);
+            return;
+        }
+
         // 4. Allow unauthenticated login and register under /v1
         if (path.contains("/v1/auth")
                 && !path.contains("/v1/auth/logout")
