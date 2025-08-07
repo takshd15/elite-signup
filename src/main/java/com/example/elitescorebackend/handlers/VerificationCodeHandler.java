@@ -23,7 +23,7 @@ public class VerificationCodeHandler {
         return instance;
     }
 
-    public void generateVerificationCode(int userId, String requestIp) {
+    public String generateVerificationCode(int userId, String requestIp) {
         // 1) build a zero-padded 6-digit numeric code
         int max = (int) Math.pow(10, CODE_LENGTH);
         int raw = RANDOM.nextInt(max);
@@ -44,6 +44,7 @@ public class VerificationCodeHandler {
         vc.setUsed(false);
 
         this.addVerificationCode(vc);
+        return code;
     }
 
     private void addVerificationCode(VerificationCode vc) {

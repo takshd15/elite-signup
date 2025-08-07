@@ -93,7 +93,7 @@ public class AuthCORSFilter implements Filter {
         request.setAttribute("clientIp", ip);
 
         //  3) If the path does NOT start with /v1 -> allow without token
-        if (!path.startsWith(request.getContextPath() + "/v1")) {
+        if (!path.startsWith(request.getContextPath() + "/v1") ) {
             chain.doFilter(new SanitizedRequest(request), res);
             return;
         }

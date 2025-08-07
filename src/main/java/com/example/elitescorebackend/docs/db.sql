@@ -108,6 +108,16 @@ create table user_follows
     primary key (follower_id, followee_id)
 );
 
+create table pre_users_info
+(
+    id    integer default nextval('presingup_id_seq'::regclass) not null,
+    email varchar                                               not null,
+    name  varchar                                               not null,
+    primary key (id, email, name)
+);
+
+
+
 create index idx_user_follows_by_follower
     on user_follows (follower_id);
 
@@ -193,4 +203,8 @@ alter sequence users_auth_user_id_seq owned by users_auth.user_id;
 create sequence oauth_accounts_id_seq;
 
 alter sequence oauth_accounts_id_seq owned by oauth_accounts.id;
+
+create sequence presingup_id_seq;
+
+alter sequence presingup_id_seq owned by pre_users_info.id;
 

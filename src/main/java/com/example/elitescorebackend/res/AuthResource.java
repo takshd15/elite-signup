@@ -1,11 +1,9 @@
 package com.example.elitescorebackend.res;
 
 import com.example.elitescorebackend.encryption.Encrypt;
-import com.example.elitescorebackend.handlers.ForgotPasswordHandler;
-import com.example.elitescorebackend.handlers.TokenRevocationHandler;
-import com.example.elitescorebackend.handlers.UserHandler;
-import com.example.elitescorebackend.handlers.VerificationCodeHandler;
+import com.example.elitescorebackend.handlers.*;
 import com.example.elitescorebackend.models.ForgotPasswordToken;
+import com.example.elitescorebackend.models.PreUser;
 import com.example.elitescorebackend.models.VerificationCode;
 import com.example.elitescorebackend.util.JwtUtil;
 import com.example.elitescorebackend.models.User;
@@ -17,9 +15,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 import static com.example.elitescorebackend.util.JwtUtil.extractUserId;
 
@@ -28,6 +31,92 @@ import static com.example.elitescorebackend.util.JwtUtil.extractUserId;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
+    public void notifyUser(String email, String code) {
+        String apiKey = System.getenv("MJ_APIKEY_PUBLIC");
+        String secretKey = System.getenv("MJ_APIKEY_PRIVATE");
+
+        String auth = Base64.getEncoder().encodeToString((apiKey + ":" + secretKey).getBytes());
+
+        String senderEmail = "calin.baculescu@gmail.com";
+        String senderName = "Elite Score";
+
+        String subject = "Your verification code";
+        String text = "Your code is: " + code;
+        String html = "<p>Your code is: <strong>" + code + "</strong></p>";
+
+        // Use `String.format()` or multiline strings (Java 15+)
+        String jsonBody = """
+            {
+              "Messages":[
+                {
+                  "From": {
+                    "Email": "%s",
+                    "Name": "%s"
+                  },
+                  "To": [
+                    {
+                      "Email": "%s",
+                      "Name": "User"
+                    }
+                  ],
+                  "Subject": "%s",
+                  "TextPart": "%s",
+                  "HTMLPart": "%s"
+                }
+              ]
+            }
+            """.formatted(senderEmail, senderName, email, subject, text, html);
+
+        try {
+            URL url = new URL("https://api.mailjet.com/v3.1/send");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Authorization", "Basic " + auth);
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int status = conn.getResponseCode();
+            System.out.println("Mailjet API response status: " + status);
+
+            if (status >= 200 && status < 300) {
+                System.out.println("Verification email sent to " + email);
+            } else {
+                System.out.println("Failed to send email. Status code: " + status);
+                System.out.println(conn.getResponseMessage());
+            }
+
+            conn.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @POST
+    @Path("/pre-signup")
+    public Response preSignUp(LoginRequest req){
+        if(req.username == null ||req.email == null){
+            ApiResponse<Void> resp = new ApiResponse<>(false, "All fields must be completed", null);
+            return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
+        }
+        for  (User u: UserHandler.getInstance().getAllUsers()) {
+            if (u.getUsername().equals(req.username) || u.getEmail().equals(req.email)) {
+                ApiResponse<Void> resp = new ApiResponse<>(false, "User with this email / Name exists", null);
+                return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
+            }
+        }
+        PreUser u = new PreUser(req.username,req.email);
+        PreUserHandler.getInstance().addPreUser(u);
+        ApiResponse<Void> resp = new ApiResponse<>(true, "User registered successfully", null);
+        return Response.status(Response.Status.OK).entity(resp).build();
+    }
+
+
     @POST
     @Path("/login")
     public Response login(@Context HttpServletRequest request, LoginRequest req){
@@ -49,8 +138,9 @@ public class AuthResource {
                         return Response.status(Response.Status.OK).entity(resp).build();
 
                     } else if (handler.countCodesLastHour(u.getID()) < 4) {
-                        handler.generateVerificationCode(u.getID(), (String) request.getAttribute("clientIp")
+                        String code = handler.generateVerificationCode(u.getID(), (String) request.getAttribute("clientIp")
                         );
+                        notifyUser(u.getEmail(), code);
                         ApiResponse<String> resp = new ApiResponse<>(
                                 true,
                                 "Login success, waiting for code(sent another one)",
@@ -114,8 +204,9 @@ public class AuthResource {
         }
 
         if(VerificationCodeHandler.getInstance().countCodesLastHour(userId) < 4){
-            VerificationCodeHandler.getInstance().generateVerificationCode(userId,
+            String code = VerificationCodeHandler.getInstance().generateVerificationCode(userId,
                     (String) request.getAttribute("clientIp"));
+            notifyUser(UserHandler.getInstance().getUser(userId).getEmail(), code);
 
             ApiResponse<Void> resp = new ApiResponse<>(true, "Code regenerated!",null);
             return Response.status(Response.Status.OK).entity(resp).build();
