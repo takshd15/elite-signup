@@ -1,7 +1,9 @@
 package com.example.elitescorebackend.res;
 
 import com.example.elitescorebackend.handlers.FollowHandler;
+import com.example.elitescorebackend.handlers.ProfileInfoHandler;
 import com.example.elitescorebackend.handlers.UserHandler;
+import com.example.elitescorebackend.models.ProfileInfo;
 import com.example.elitescorebackend.models.User;
 import com.example.elitescorebackend.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,8 +26,10 @@ public class FollowResource {
         Integer userId = Integer.parseInt((String) request.getAttribute("userId"));
         User requester = UserHandler.getInstance().getUser(userId);
         User receiver  = UserHandler.getInstance().getUser(req.userId);
+        ProfileInfo receiverProfile = ProfileInfoHandler.getInstance().getProfile(req.userId);
+        ProfileInfo requesterProfile = ProfileInfoHandler.getInstance().getProfile(req.userId);
 
-        if (requester == null || receiver == null) {
+        if (requester == null || receiver == null || receiverProfile == null ||  requesterProfile == null) {
             ApiResponse<Void> resp = new ApiResponse<>(false, "User does not exist", null);
             return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
         }
@@ -45,8 +50,10 @@ public class FollowResource {
         Integer userId = Integer.parseInt((String) request.getAttribute("userId"));
         User requester = UserHandler.getInstance().getUser(userId);
         User receiver  = UserHandler.getInstance().getUser(req.userId);
+        ProfileInfo receiverProfile = ProfileInfoHandler.getInstance().getProfile(req.userId);
+        ProfileInfo requesterProfile = ProfileInfoHandler.getInstance().getProfile(req.userId);
 
-        if (requester == null || receiver == null) {
+        if (requester == null || receiver == null || receiverProfile == null ||  requesterProfile == null) {
             ApiResponse<Void> resp = new ApiResponse<>(false, "User does not exist", null);
             return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
         }
@@ -63,28 +70,14 @@ public class FollowResource {
 
     @GET
     @Path("/getFollowers/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getFollowers(
-            @PathParam("userId") int targetUserId
-    ) {
-        List<User> followers = FollowHandler.getInstance().getFollowers(targetUserId);
-        ApiResponse<List<User>> resp = new ApiResponse<>(
-                true,
-                "Followers retrieved",
-                followers
-        );
-        return Response.ok(resp).build();
-    }
-
-    @GET
-    @Path("/getFollowing/{userId}")
-    public Response getFollowing(
             @PathParam("userId") int targetUserId
     ) {
         List<Integer> followers = new ArrayList<>();
         for(User u:FollowHandler.getInstance().getFollowers(targetUserId)){
             followers.add(u.getID());
         }
-
         ApiResponse<List<Integer>> resp = new ApiResponse<>(
                 true,
                 "Your followers retrieved",
@@ -94,7 +87,27 @@ public class FollowResource {
     }
 
     @GET
+    @Path("/getFollowing/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFollowing(
+            @PathParam("userId") int targetUserId
+    ) {
+        List<Integer> following = new ArrayList<>();
+        for(User u:FollowHandler.getInstance().getFollowing(targetUserId)){
+            following.add(u.getID());
+        }
+
+        ApiResponse<List<Integer>> resp = new ApiResponse<>(
+                true,
+                "Following retrieved",
+                following
+        );
+        return Response.ok(resp).build();
+    }
+
+    @GET
     @Path("/get_own_followers")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getOwnFollowers(@Context HttpServletRequest request) {
         Integer userId = Integer.parseInt((String) request.getAttribute("userId"));
         User requester = UserHandler.getInstance().getUser(userId);
@@ -117,6 +130,7 @@ public class FollowResource {
 
     @GET
     @Path("/get_own_following")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getOwnFollowing(@Context HttpServletRequest request) {
         Integer userId = Integer.parseInt((String) request.getAttribute("userId"));
         User requester = UserHandler.getInstance().getUser(userId);
@@ -124,15 +138,15 @@ public class FollowResource {
             ApiResponse<Void> error = new ApiResponse<>(false, "User does not exist", null);
             return Response.status(Response.Status.UNAUTHORIZED).entity(error).build();
         }
-        List<Integer> followers = new ArrayList<>();
-        for(User u:FollowHandler.getInstance().getFollowers(userId)){
-            followers.add(u.getID());
+        List<Integer> following = new ArrayList<>();
+        for(User u:FollowHandler.getInstance().getFollowing(userId)){
+            following.add(u.getID());
         }
 
         ApiResponse<List<Integer>> resp = new ApiResponse<>(
                 true,
-                "Your followers retrieved",
-                followers
+                "Following retrieved",
+                following
         );
         return Response.ok(resp).build();
     }

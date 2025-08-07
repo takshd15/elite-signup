@@ -33,17 +33,6 @@ public class ProfileInfo {
         // default constructor
     }
 
-    public String toJson() {
-       ObjectMapper MAPPER = new ObjectMapper().registerModule(new JavaTimeModule())
-               // write dates as ISO-8601 strings, not timestamps
-               .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);;
-        try {
-            return MAPPER.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize ProfileInfo to JSON", e);
-        }
-    }
-
     // --- Getters & Setters ---
 
     public Long getUserId() {
@@ -172,27 +161,5 @@ public class ProfileInfo {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "ProfileInfo{" +
-                "userId=" + userId +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", bio='" + bio + '\'' +
-                ", resume='" + resume + '\'' +
-                ", growthScore=" + growthScore +
-                ", xpPoints=" + xpPoints +
-                ", achievements=" + achievements +
-                ", activeChallenge=" + activeChallenge +
-                ", challengesCompleted=" + challengesCompleted +
-                ", followersCount=" + followersCount +
-                ", followingCount=" + followingCount +
-                ", visibility=" + visibility +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
     }
 }

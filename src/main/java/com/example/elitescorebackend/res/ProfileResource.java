@@ -135,20 +135,22 @@ public class ProfileResource {
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/get_profile/{userId}")
     public Response get_profile(
             @PathParam("userId") int targetUserId
     ) {
         ProfileInfo profileInfo = ProfileInfoHandler.getInstance().getProfile(targetUserId);
-        ApiResponse<String> resp = new ApiResponse<>(
+        ApiResponse<ProfileInfo> resp = new ApiResponse<>(
                 true,
                 "Following retrieved",
-                profileInfo.toJson()
+                profileInfo
         );
         return Response.ok(resp).build();
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/get_own_profile")
     public Response get_own_profile(@Context HttpServletRequest request) {
         Integer userId = Integer.parseInt((String) request.getAttribute("userId"));
@@ -159,10 +161,10 @@ public class ProfileResource {
             return Response.status(Response.Status.UNAUTHORIZED).entity(error).build();
         }
         ProfileInfo profileInfo = ProfileInfoHandler.getInstance().getProfile(userId);
-        ApiResponse<String> resp = new ApiResponse<>(
+        ApiResponse<ProfileInfo> resp = new ApiResponse<>(
                 true,
                 "Following retrieved",
-                profileInfo.toJson()
+                profileInfo
         );
         return Response.ok(resp).build();
     }

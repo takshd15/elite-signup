@@ -23,15 +23,19 @@ public class DatabaseConnection {
     private static final HikariDataSource dataSource;
 
     static {
+
+        String username = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASS");
+
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.postgresql.Driver");
 
-        config.setJdbcUrl("jdbc:postgresql://localhost/postgres");
-        config.setUsername("postgres");
-        config.setPassword("2912");
+        config.setJdbcUrl("jdbc:postgresql://cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d4ukv7mqkkc9i1");//db
+        config.setUsername(username);
+        config.setPassword(password);
 
         // pool settings
-        config.setMaximumPoolSize(100);
+        config.setMaximumPoolSize(20);
         config.setMinimumIdle(2);
         config.setIdleTimeout(300_000);
         config.setConnectionTimeout(10_000);

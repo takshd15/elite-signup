@@ -57,7 +57,7 @@ create table user_profile_info
     achievements         jsonb                    default '[]'::jsonb                  not null,
     active_challenge     integer,
     challenges_completed integer                  default 0                            not null,
-    visibility           varchar                  default 'public'::profile_visibility not null,
+    visibility           varchar                  default 'public' not null,
     created_at           timestamp with time zone default now()                        not null,
     updated_at           timestamp with time zone default now()                        not null,
     followers_count      integer                  default 0                            not null,

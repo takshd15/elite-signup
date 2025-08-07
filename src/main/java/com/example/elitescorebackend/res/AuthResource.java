@@ -119,6 +119,7 @@ public class AuthResource {
 
     @POST
     @Path("/login")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Context HttpServletRequest request, LoginRequest req){
         if(req.username == null || req.password == null){
             return Response.status(Response.Status.BAD_REQUEST).build();

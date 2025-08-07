@@ -77,22 +77,12 @@
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>3.1.4</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>2.13.5</version>
-        </dependency>
 
         <!-- Jakarta XML-Bind API + MOXy implementation -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <version>3.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.moxy</artifactId>
-            <version>3.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
@@ -139,6 +129,12 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
             <version>2.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
     </dependencies>
