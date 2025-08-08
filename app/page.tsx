@@ -40,66 +40,66 @@ const itemVariants = {
 }
 
 // Testimonial data
-const testimonials = [
+  const testimonials = [
   {
-    name: "Alex Johnson",
-    role: "Software Engineer",
+    name: "Calin Baculescu",
+    role: "Tech Lead Developer",
     image: "/placeholder-user.jpg",
     content:
-      "This app has transformed how I approach my career growth. The daily challenges keep me motivated, and seeing my progress on the leaderboard pushes me to improve consistently.",
+      "Developing this app has deepened my understanding of self-improvement. If you’re ready to elevate your life, try our product and you’ll see the difference.",
     rating: 5,
   },
   {
-    name: "Sarah Williams",
-    role: "Product Manager",
+    name: "Taksh Dange",
+    role: "Founder",
     image: "/placeholder-user.jpg",
     content:
-      "I've tried many self-improvement apps, but this one stands out with its social features. Comparing my progress with peers has added a fun competitive element to my personal development.",
+      "With EliteScore, I want to help everyone achieve their goals and stay motivated. Learn from the best, keep dreaming, keep achieving.",
     rating: 5,
   },
   {
-    name: "Michael Chen",
-    role: "Data Scientist",
+    name: "Givanna Lopez",
+    role: "Marketing Lead & Strategist",
     image: "/placeholder-user.jpg",
     content:
-      "The gamification elements make learning new skills actually enjoyable. I've completed more courses in the last month than I did all of last year!",
-    rating: 4,
+      "Help design the experience you want: motivating quests, fair leaderboards, and a Resume Score™ you’re proud to show.",
+    rating: 5,
   },
 ]
 
 // Feature data
-const features = [
+  const features = [
   {
-    title: "GrowthScore™ Resume Analysis",
-    description:
-      "Upload your résumé to receive an instant AI-powered GrowthScore™ and personalized feedback.",
+      title: "AI Resume Score Analysis",
+      description:
+        "Upload your résumé to get an instant Resume Score plus personalized, actionable fixes that raise your score fast.",
     icon: BarChart2,
   },
-  {
-    title: "Leaderboards & Community",
-    description:
-      "Benchmark against peers, climb leaderboards, and celebrate wins together.",
-    icon: Users,
-  },
+      {
+      title: "Connect & Learn from Peers",
+      description:
+        "Connect with like-minded individuals, see how others got into their dream universities and jobs, and learn from their resume strategies.",
+      icon: Users,
+    },
   {
     title: "Gamified Challenges",
     description:
-      "Transform goals into daily and monthly challenges that keep you motivated and consistent.",
+        "Turn goals into daily and monthly challenges so you never lose momentum.",
     icon: Zap,
   },
   {
-    title: "Data-Driven Insights",
-    description: "Interactive dashboards turn raw progress into actionable insights you can showcase.",
+    title: "Leaderboards & Rankings",
+      description: "Compete with friends and peers on dynamic leaderboards that showcase your progress in real time.",
     icon: Trophy,
   },
 ]
 
 // Stats data
-const stats = [
-  { label: "Waitlist Members", value: 500, suffix: "+" },
-  { label: "Beta Launch", value: 2024, suffix: "" },
-  { label: "Early Access", value: 1000, suffix: " spots" },
-  { label: "Exclusive Features", value: 15, suffix: "+" },
+  const stats = [
+  { label: "Target Launch", value: 2025, suffix: "" },
+  { label: "Founding Beta Spots", value: 200, suffix: "" },
+  { label: "Core Features at Beta", value: 12, suffix: "+" },
+  { label: "Referral Perks", value: 3, suffix: "+" },
 ]
 
 // Simple static background for better performance
@@ -294,7 +294,7 @@ export default function HomePage() {
                   transition={{ type: "spring", stiffness: 400 }}
                 >
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                    Beta Launch - September 2024
+                    Beta Launch - September 2025
                 </motion.div>
                 
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-widest uppercase leading-tight">
@@ -308,28 +308,16 @@ export default function HomePage() {
                   </h1>
                 
                 <p className="text-lg sm:text-xl md:text-2xl text-zinc-200 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                  Join the waitlist for early access to EliteScore. Upload your résumé for personalized GrowthScore™, tackle gamified challenges, and rise through leaderboards with your peers.
+                  Get an instant AI Resume Score, unlock personalized challenges, and connect with peers who've achieved their goals. Join the Community and start working on your goals today.
                 </p>
                 
-                {/* Social proof with hover effect */}
+                {/* Pre-launch note (no social proof yet) */}
                 <motion.div 
-                  className="flex items-center gap-4 text-sm text-zinc-400 justify-center lg:justify-start"
+                  className="flex items-center gap-2 text-sm text-zinc-400 justify-center lg:justify-start"
                   whileHover={{ x: 5 }}
                 >
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "w-8 h-8 rounded-full border-2 border-black",
-                          i === 1 && "bg-gradient-to-r from-blue-400 to-purple-400",
-                          i === 2 && "bg-gradient-to-r from-purple-400 to-pink-400",
-                          i === 3 && "bg-gradient-to-r from-cyan-400 to-blue-400"
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <span>Join 500+ students on the waitlist</span>
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                  <span>Founding beta — help shape EliteScore with your feedback</span>
                 </motion.div>
               </div>
 
@@ -361,7 +349,7 @@ export default function HomePage() {
                 
                 {/* Trust indicators */}
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-zinc-400 justify-center lg:justify-start">
-                  {["No credit card required", "Free beta access", "September 2024 launch"].map((text, i) => (
+                  {["No credit card required", "Free beta access", "September 2025 launch"].map((text, i) => (
                     <motion.div
                       key={text}
                       className="flex items-center gap-2"
@@ -417,11 +405,11 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-                                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
-              Beta Waitlist Stats
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
+              Beta Launch Plan
             </h2>
             <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
-              Join the growing community of early adopters
+              We’re getting ready for September 2025. Join the waitlist to get updates and early access.
             </p>
           </motion.div>
           
@@ -455,7 +443,7 @@ export default function HomePage() {
                 }}
               />
               Beta Waitlist - Join Now
-            </motion.div>
+          </motion.div>
           </motion.div>
         </div>
       </section>
@@ -473,7 +461,7 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-              Our platform combines powerful tracking tools, social elements, and gamification to create a uniquely effective self-improvement experience.
+              Our platform combines AI resume analysis, personalized challenges, and community learning to help you achieve your goals and connect with like-minded peers.
             </p>
           </motion.div>
 
@@ -538,26 +526,26 @@ export default function HomePage() {
             {[
               {
                 step: "1",
-                title: "Upload Résumé & Get GrowthScore™",
-                description: "Upload your résumé and receive an instant AI-powered GrowthScore™ plus personalized feedback.",
+                title: "Upload Resume & Get AI Score",
+                description: "Upload your resume and get an instant AI-powered Resume Score with personalized improvement suggestions.",
                 icon: User,
               },
               {
                 step: "2",
-                title: "Set Goals & Challenges",
-                description: "Transform your goals into daily and monthly challenges that keep you motivated and consistent.",
+                title: "Set Goals & Join Challenges",
+                description: "Transform your goals into personalized challenges and connect with peers working on similar objectives.",
                 icon: Zap,
               },
               {
                 step: "3",
-                title: "Benchmark & Track Progress",
-                description: "Benchmark your GrowthScore™ against peers and track momentum in real time.",
+                title: "Learn from Successful Peers",
+                description: "See how others achieved their dream universities and jobs, and learn from their resume strategies.",
                 icon: BarChart2,
               },
               {
                 step: "4",
-                title: "Celebrate & Share Achievements",
-                description: "Collect XP, unlock prestige badges, and showcase your improvements to employers.",
+                title: "Track Progress & Celebrate Wins",
+                description: "Monitor your improvement, unlock achievements, and showcase your growth to potential employers.",
                 icon: Trophy,
               },
             ].map((item, index) => (
@@ -608,10 +596,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
-              What Our Users Say
+              Word from Our Team
             </h2>
             <p className="text-zinc-200 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-              Join thousands of professionals who are accelerating their growth with our platform.
+              Meet the passionate team behind EliteScore, dedicated to helping students achieve their goals.
             </p>
           </motion.div>
 
@@ -791,9 +779,9 @@ export default function HomePage() {
                      </div>
                      
                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                       <Button
+              <Button
                          type="submit"
-                         size="lg"
+                size="lg"
                          disabled={isSubmitting}
                          className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] text-white shadow-lg hover:shadow-[0_0_30px_rgba(43,188,255,0.4)] transition-all duration-300 disabled:opacity-50"
                        >
@@ -814,7 +802,7 @@ export default function HomePage() {
                              </>
                            )}
                          </span>
-                       </Button>
+              </Button>
                      </motion.div>
                    </form>
                  )}
