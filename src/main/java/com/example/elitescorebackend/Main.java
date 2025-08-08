@@ -20,7 +20,7 @@ public class Main {
         ServletContainer servletContainer = new ServletContainer(config);
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         ctx.setContextPath("/");
-        ctx.addServlet(new org.eclipse.jetty.servlet.ServletHolder(new RootServlet()), "/");
+        ctx.addServlet(new org.eclipse.jetty.servlet.ServletHolder(new RootServlet()), "/*");
         ctx.addServlet(new org.eclipse.jetty.servlet.ServletHolder(servletContainer), "/v1/*");
 
         // Register CORS/Auth filter for all requests
