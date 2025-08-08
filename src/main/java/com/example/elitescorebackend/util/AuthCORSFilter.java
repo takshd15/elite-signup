@@ -125,19 +125,23 @@ public class AuthCORSFilter implements Filter {
         String jti = JwtUtil.extractJti(token);
         if (token != null && isValid(token) && !TokenRevocationHandler.getInstance().isRevoked(jti)) {
             request.setAttribute("userId", id);
+
+            if (!hasValidatedLatestCode(Integer.parseInt(id), ip)
+                    && !path.contains("/v1/auth/resend")
+                    && !path.contains("/v1/auth/verify")) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "Access denied: you must verify your latest code before proceeding."
+                );
+                return;
+            }
+
             chain.doFilter(new SanitizedRequest(request), res);
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Unauthorized: invalid or missing token\"}");
-        }
-
-//         6.b Authenticated:   userId
-        if (!hasValidatedLatestCode(Integer.parseInt(id),ip) && (!path.contains("/v1/auth/resend") || !path.contains("/v1/auth/verify"))) {
-            response.sendError(
-                    HttpServletResponse.SC_FORBIDDEN,
-                    "Access denied: you must verify your latest code before proceeding."
-            );
+            return;
         }
 
     }
