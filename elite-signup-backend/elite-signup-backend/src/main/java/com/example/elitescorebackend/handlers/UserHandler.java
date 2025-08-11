@@ -164,7 +164,9 @@ public class UserHandler {
                 users_auth.add(user);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // NO-DB mode: return empty list
+            System.err.println("[UserHandler] getAllUsers fallback: " + e.getMessage());
+            return new ArrayList<>();
         } finally {
             try {
                 if (rs != null) rs.close();

@@ -23,14 +23,21 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static com.example.elitescorebackend.util.JwtUtil.extractUserId;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.elitescorebackend.models.dto.LoginRequestDto;
+import com.example.elitescorebackend.util.DatabaseConnection;
 
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
+    private static final ConcurrentMap<String, Boolean> inMemoryWaitlist = new ConcurrentHashMap<>();
     public void notifyUser(String email, String code) {
         String apiKey = System.getenv("MJ_APIKEY_PUBLIC");
         String secretKey = System.getenv("MJ_APIKEY_PRIVATE");
@@ -99,10 +106,26 @@ public class AuthResource {
 
     @POST
     @Path("/pre-signup")
-    public Response preSignUp(LoginRequest req){
+    public Response preSignUp(@Context HttpServletRequest request){
         // Debug logging
         System.out.println("📥 Pre-signup request received");
-        System.out.println("🔍 Request object: " + req);
+        String rawBody;
+        try {
+            rawBody = new String(request.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            ApiResponse<Void> resp = new ApiResponse<>(false, "Failed to read request body", null);
+            return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
+        }
+        System.out.println("🔍 Raw body: " + rawBody);
+
+        LoginRequestDto req;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            req = mapper.readValue(rawBody, LoginRequestDto.class);
+        } catch (Exception e) {
+            ApiResponse<Void> resp = new ApiResponse<>(false, "Invalid JSON payload", null);
+            return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
+        }
         
         if(req == null) {
             System.out.println("❌ Request object is null");
@@ -115,25 +138,41 @@ public class AuthResource {
             ApiResponse<Void> resp = new ApiResponse<>(false, "All fields must be completed", null);
             return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
         }
-        for  (User u: UserHandler.getInstance().getAllUsers()) {
-            if (u.getUsername().equals(req.getUsername()) || u.getEmail().equals(req.getEmail())) {
-                System.out.println("❌ User already exists: " + req.getUsername() + " / " + req.getEmail());
+        boolean dbAvailable = true;
+        try {
+            DatabaseConnection.getConnection().close();
+        } catch (Exception e) {
+            dbAvailable = false;
+        }
+
+        if (dbAvailable) {
+            for  (User u: UserHandler.getInstance().getAllUsers()) {
+                if (u.getUsername().equals(req.getUsername()) || u.getEmail().equals(req.getEmail())) {
+                    System.out.println("❌ User already exists: " + req.getUsername() + " / " + req.getEmail());
+                    ApiResponse<Void> resp = new ApiResponse<>(false, "User with this email / Name exists", null);
+                    return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
+                }
+            }
+            PreUser u = new PreUser(req.getUsername(), req.getEmail());
+            System.out.println("✅ Creating new pre-user: " + req.getUsername() + " (" + req.getEmail() + ")");
+            PreUserHandler.getInstance().addPreUser(u);
+        } else {
+            // In-memory fallback for local/dev without DB
+            String key = (req.getUsername() + "|" + req.getEmail()).toLowerCase();
+            if (inMemoryWaitlist.putIfAbsent(key, Boolean.TRUE) != null) {
                 ApiResponse<Void> resp = new ApiResponse<>(false, "User with this email / Name exists", null);
                 return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
             }
         }
-        PreUser u = new PreUser(req.getUsername(), req.getEmail());
-        System.out.println("✅ Creating new pre-user: " + req.getUsername() + " (" + req.getEmail() + ")");
-        PreUserHandler.getInstance().addPreUser(u);
         ApiResponse<Void> resp = new ApiResponse<>(true, "User registered successfully", null);
         return Response.status(Response.Status.OK).entity(resp).build();
     }
 
-
+    
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(@Context HttpServletRequest request, LoginRequest req){
+    public Response login(@Context HttpServletRequest request, com.example.elitescorebackend.models.dto.LoginRequestDto req){
         if(req.getUsername() == null || req.getPassword() == null){
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -233,7 +272,7 @@ public class AuthResource {
 
     @POST
     @Path("/signup")
-    public Response signup(LoginRequest req){
+    public Response signup(com.example.elitescorebackend.models.dto.LoginRequestDto req){
         if(req.getUsername() == null || req.getPassword() == null || req.getEmail() == null){
             ApiResponse<Void> resp = new ApiResponse<>(false, "All fields must be completed", null);
             return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
@@ -272,7 +311,7 @@ public class AuthResource {
 
     @POST
     @Path("/forgot_password-{token}")
-    public Response forgot_password(@PathParam("token") String token, LoginRequest req) {
+    public Response forgot_password(@PathParam("token") String token, com.example.elitescorebackend.models.dto.LoginRequestDto req) {
         if(ForgotPasswordHandler.getInstance().getTokenByToken(token) == null || ForgotPasswordHandler.getInstance().getTokenByToken(token).isExpired()){
             ApiResponse<Void> resp = new ApiResponse<>(true, "Token Invalid/Expired", null);
             return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
@@ -322,51 +361,8 @@ public class AuthResource {
         return Response.status(Response.Status.OK).entity(resp).build();
     }
 
-    static class LoginRequest {
-        private String username;
-        private String email;
-        private String password;
-        
-        // Default constructor required for JSON deserialization
-        public LoginRequest() {}
-        
-        // Constructor with parameters
-        public LoginRequest(String username, String email, String password) {
-            this.username = username;
-            this.email = email;
-            this.password = password;
-        }
-        
-        // Getters and setters required for JSON deserialization
-        public String getUsername() { 
-            return username; 
-        }
-        
-        public void setUsername(String username) { 
-            this.username = username; 
-        }
-        
-        public String getEmail() { 
-            return email; 
-        }
-        
-        public void setEmail(String email) { 
-            this.email = email; 
-        }
-        
-        public String getPassword() { 
-            return password; 
-        }
-        
-        public void setPassword(String password) { 
-            this.password = password; 
-        }
-        
-        @Override
-        public String toString() {
-            return "LoginRequest{username='" + username + "', email='" + email + "'}";
-        }
-    }
+    // Removed inner LoginRequest. Using com.example.elitescorebackend.models.dto.LoginRequestDto instead.
+
 
 }
 

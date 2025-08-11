@@ -20,28 +20,34 @@ public class DatabaseConnection {
      */
     public static boolean notloaded = false;
 
-    private static final HikariDataSource dataSource;
+    private static HikariDataSource dataSource;
 
     static {
-
         String username = System.getenv("DB_USER");
         String password = System.getenv("DB_PASS");
+        String jdbcUrl = System.getenv("DB_JDBC_URL");
 
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.postgresql.Driver");
+        if (jdbcUrl == null || jdbcUrl.isBlank()) {
+            jdbcUrl = "jdbc:postgresql://cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d4ukv7mqkkc9i1";
+        }
 
-        config.setJdbcUrl("jdbc:postgresql://cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d4ukv7mqkkc9i1");//db
-        config.setUsername(username);
-        config.setPassword(password);
-
-        // pool settings
-        config.setMaximumPoolSize(20);
-        config.setMinimumIdle(2);
-        config.setIdleTimeout(300_000);
-        config.setConnectionTimeout(10_000);
-        config.setPoolName("Pool");
-
-        dataSource = new HikariDataSource(config);
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            System.err.println("[DatabaseConnection] DB credentials not provided. Running in NO-DB mode.");
+            dataSource = null;
+        } else {
+            HikariConfig config = new HikariConfig();
+            config.setDriverClassName("org.postgresql.Driver");
+            config.setJdbcUrl(jdbcUrl);
+            config.setUsername(username);
+            config.setPassword(password);
+            // pool settings
+            config.setMaximumPoolSize(20);
+            config.setMinimumIdle(2);
+            config.setIdleTimeout(300_000);
+            config.setConnectionTimeout(10_000);
+            config.setPoolName("Pool");
+            dataSource = new HikariDataSource(config);
+        }
     }
 
     /**
@@ -64,6 +70,10 @@ public class DatabaseConnection {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(
                     "Could not load DatabaseConnection class for pool init", e);
+        }
+
+        if (dataSource == null) {
+            throw new SQLException("Database not configured (NO-DB mode)");
         }
 
         Connection connection = dataSource.getConnection();

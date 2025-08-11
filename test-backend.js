@@ -10,6 +10,7 @@ const testBackendEndpoints = async () => {
 
   const possibleUrls = [
     'http://localhost:8080/v1',
+    'http://localhost:8081/v1',
     'https://your-backend-url.herokuapp.com/v1', // Replace with your deployed URL
   ]
 

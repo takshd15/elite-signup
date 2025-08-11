@@ -6,6 +6,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.server.ResourceConfig;
 import jakarta.servlet.DispatcherType;
 import org.eclipse.jetty.servlet.FilterHolder;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
 import java.util.EnumSet;
 
@@ -14,8 +15,9 @@ public class Main {
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8081"));
 
         ResourceConfig config = new ResourceConfig()
-            .packages("com.example.elitescorebackend.res")
-            .register(com.example.elitescorebackend.util.JacksonConfig.class);
+            .packages("com.example.elitescorebackend")
+            .register(com.example.elitescorebackend.util.JacksonConfig.class)
+            .register(JacksonFeature.class);
 
         ServletContainer servletContainer = new ServletContainer(config);
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
