@@ -1132,11 +1132,11 @@ export default function GoalsPage() {
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-xl font-bold text-white">Resume Score</h3>
                           <div className="text-3xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            <AnimatedCounter from={0} to={resumeAnalysis.overallScore} duration={2} />%
+                            <AnimatedCounter from={0} to={userScore || resumeAnalysis.overallScore} duration={2} />%
                           </div>
                         </div>
                         <AnimatedProgress
-                          value={resumeAnalysis.overallScore}
+                          value={userScore || resumeAnalysis.overallScore}
                           max={100}
                           className="h-3 bg-zinc-800/50"
                           indicatorClassName="bg-gradient-to-r from-blue-500 to-purple-500"
