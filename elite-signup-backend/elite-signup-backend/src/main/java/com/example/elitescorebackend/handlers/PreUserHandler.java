@@ -48,4 +48,37 @@ public class PreUserHandler {
             }
         }
     }
+
+    public List<PreUser> getAllPreSignUps() {
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        List<PreUser> users_auth = new ArrayList<>();
+        try {
+            connection = DatabaseConnection.getConnection();
+            String query = "SELECT * FROM pre_users_info";
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                PreUser user = new PreUser(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email")
+                );
+                users_auth.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return users_auth;
+    }
+
 }

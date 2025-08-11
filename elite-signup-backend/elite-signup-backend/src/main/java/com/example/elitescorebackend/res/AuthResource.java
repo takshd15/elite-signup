@@ -115,7 +115,7 @@ public class AuthResource {
             ApiResponse<Void> resp = new ApiResponse<>(false, "All fields must be completed", null);
             return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
         }
-        for  (User u: UserHandler.getInstance().getAllUsers()) {
+        for  (PreUser u: PreUserHandler.getInstance().getAllPreSignUps()) {
             if (u.getUsername().equals(req.getUsername()) || u.getEmail().equals(req.getEmail())) {
                 System.out.println("❌ User already exists: " + req.getUsername() + " / " + req.getEmail());
                 ApiResponse<Void> resp = new ApiResponse<>(false, "User with this email / Name exists", null);

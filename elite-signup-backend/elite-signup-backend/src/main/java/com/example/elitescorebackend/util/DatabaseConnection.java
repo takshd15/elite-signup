@@ -26,11 +26,12 @@ public class DatabaseConnection {
 
         String username = System.getenv("DB_USER");
         String password = System.getenv("DB_PASS");
+        String link = System.getenv("DATABASE_URL");
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.postgresql.Driver");
 
-        config.setJdbcUrl("jdbc:postgresql://cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d4ukv7mqkkc9i1");//db
+        config.setJdbcUrl(link);//db
         config.setUsername(username);
         config.setPassword(password);
 
