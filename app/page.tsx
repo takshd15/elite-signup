@@ -245,17 +245,38 @@ export default function HomePage() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormData({ name: '', email: '' })
-    }, 3000)
+    try {
+      // Call the backend API
+      const response = await fetch('http://localhost:8081/v1/auth/pre-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.name,
+          email: formData.email
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setIsSubmitted(false)
+          setFormData({ name: '', email: '' })
+        }, 3000)
+      } else {
+        // Handle error (e.g., user already exists)
+        alert(data.message || 'An error occurred. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Failed to connect to server. Please try again later.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
