@@ -119,8 +119,8 @@ const goalCategories = [
   }
 ]
 
-// Mock resume analysis data
-const resumeAnalysis = {
+// Initial resume analysis data
+const initialResumeAnalysis = {
   overallScore: 78,
   sections: [
     { name: "Experience", score: 85, feedback: "Strong technical background with progressive responsibilities" },
@@ -411,6 +411,7 @@ export default function GoalsPage() {
   const [showAnalysis, setShowAnalysis] = useState(false)
 
   const [userScore, setUserScore] = useState<number | null>(null)
+  const [resumeAnalysis, setResumeAnalysis] = useState(initialResumeAnalysis)
   const [isNewUser, setIsNewUser] = useState(true)
   const [showVerificationDialog, setShowVerificationDialog] = useState(false)
   const [selectedChallengeForVerification, setSelectedChallengeForVerification] = useState<any>(null)
@@ -433,9 +434,51 @@ export default function GoalsPage() {
       // Simulate file upload and analysis
       setTimeout(() => {
         setShowAnalysis(true)
-        // Generate a score based on the resume
-        const score = Math.floor(Math.random() * 40) + 60 // Score between 60-100
+        // Generate a random score between 60-100
+        const score = Math.floor(Math.random() * 40) + 60
         setUserScore(score)
+        
+        // Generate dynamic resume analysis data
+        const dynamicResumeAnalysis = {
+          overallScore: score,
+          sections: [
+            { 
+              name: "Experience", 
+              score: Math.floor(Math.random() * 30) + 70, 
+              feedback: "Strong technical background with progressive responsibilities" 
+            },
+            { 
+              name: "Skills", 
+              score: Math.floor(Math.random() * 30) + 65, 
+              feedback: "Consider adding more in-demand technologies" 
+            },
+            { 
+              name: "Education", 
+              score: Math.floor(Math.random() * 30) + 75, 
+              feedback: "Solid academic foundation" 
+            },
+            { 
+              name: "Projects", 
+              score: Math.floor(Math.random() * 30) + 60, 
+              feedback: "Good project portfolio, could use more variety" 
+            }
+          ],
+          suggestions: [
+            "Add more quantifiable achievements to your experience section",
+            "Include specific technologies and tools you've used",
+            "Highlight leadership and teamwork experiences",
+            "Consider adding certifications relevant to your field"
+          ],
+          recommendedChallenges: [
+            "Complete 3 technical projects this month",
+            "Learn 2 new programming languages",
+            "Attend 5 networking events",
+            "Earn a professional certification"
+          ]
+        }
+        
+        // Update the resume analysis state
+        setResumeAnalysis(dynamicResumeAnalysis)
         setOnboardingStep('score')
       }, 2000)
     }
@@ -924,8 +967,49 @@ export default function GoalsPage() {
                               setResumeUploaded(true)
                               setTimeout(() => {
                                 setShowAnalysis(true)
-                                const demoScore = 82 // Demo score for new users
+                                const demoScore = Math.floor(Math.random() * 40) + 60 // Random demo score 60-100
                                 setUserScore(demoScore)
+                                
+                                // Generate demo resume analysis data
+                                const demoResumeAnalysis = {
+                                  overallScore: demoScore,
+                                  sections: [
+                                    { 
+                                      name: "Experience", 
+                                      score: Math.floor(Math.random() * 30) + 70, 
+                                      feedback: "Strong technical background with progressive responsibilities" 
+                                    },
+                                    { 
+                                      name: "Skills", 
+                                      score: Math.floor(Math.random() * 30) + 65, 
+                                      feedback: "Consider adding more in-demand technologies" 
+                                    },
+                                    { 
+                                      name: "Education", 
+                                      score: Math.floor(Math.random() * 30) + 75, 
+                                      feedback: "Solid academic foundation" 
+                                    },
+                                    { 
+                                      name: "Projects", 
+                                      score: Math.floor(Math.random() * 30) + 60, 
+                                      feedback: "Good project portfolio, could use more variety" 
+                                    }
+                                  ],
+                                  suggestions: [
+                                    "Add more quantifiable achievements to your experience section",
+                                    "Include specific technologies and tools you've used",
+                                    "Highlight leadership and teamwork experiences",
+                                    "Consider adding certifications relevant to your field"
+                                  ],
+                                  recommendedChallenges: [
+                                    "Complete 3 technical projects this month",
+                                    "Learn 2 new programming languages",
+                                    "Attend 5 networking events",
+                                    "Earn a professional certification"
+                                  ]
+                                }
+                                
+                                setResumeAnalysis(demoResumeAnalysis)
                                 setOnboardingStep('score')
                               }, 2000)
                             }}
