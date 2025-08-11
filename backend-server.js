@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 8081;
+const PORT = process.env.PORT || 8081;
 const SIGNUPS_FILE = path.join(__dirname, 'beta-signups.json');
 
 // Initialize signups file if it doesn't exist
@@ -16,7 +16,13 @@ if (!fs.existsSync(SIGNUPS_FILE)) {
 let betaSignups = JSON.parse(fs.readFileSync(SIGNUPS_FILE, 'utf8'));
 
 // Middleware
-app.use(cors());
+// Configure CORS for production
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Save signups to file

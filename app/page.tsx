@@ -247,7 +247,8 @@ export default function HomePage() {
     
     try {
       // Call the backend API
-      const response = await fetch('http://localhost:8081/v1/auth/pre-signup', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'
+      const response = await fetch(`${apiUrl}/v1/auth/pre-signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
