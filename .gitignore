@@ -23,6 +23,9 @@ public/robots.txt
 .env.production.local
 .env.*.local
 
+# Data files
+beta-signups.json
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
