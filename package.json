@@ -4,15 +4,20 @@
   "description": "EliteScore - Personalized career development platform with AI-powered insights and gamified challenges",
   "author": "Your Name",
   "private": true,
+
+  "engines": { "node": "20.x", "npm": "10.x" },
+  
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "start": "next start",
-    "type-check": "tsc --noEmit",
-    "preview": "next build && next start"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start -p $PORT",
+  "preview": "next build && next start -p 3000",
+  "lint": "next lint",
+  "lint:fix": "next lint --fix",
+  "type-check": "tsc --noEmit",
+  "heroku-postbuild": "npm run build"
   },
+  
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
