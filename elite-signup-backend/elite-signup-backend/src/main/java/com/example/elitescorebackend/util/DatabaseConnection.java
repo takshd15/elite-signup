@@ -26,7 +26,7 @@ public class DatabaseConnection {
 
         String username = System.getenv("DB_USER");
         String password = System.getenv("DB_PASS");
-        String link = System.getenv("DATABASE_URL");
+        String link = System.getenv("DB_URL");
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.postgresql.Driver");
