@@ -134,12 +134,12 @@ public class AuthResource {
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Context HttpServletRequest request, LoginRequest req){
-        if(req.username == null || req.password == null){
+        if(req.getUsername() == null || req.getPassword() == null){
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         for  (User u: UserHandler.getInstance().getAllUsers()){
-            if(u.getUsername().equals(req.username) || u.getEmail().equals(req.email)){
-                if(Encrypt.verifyPassword(u.getPasswordHash(),req.password)){
+            if(u.getUsername().equals(req.getUsername()) || u.getEmail().equals(req.getEmail())){
+                if(Encrypt.verifyPassword(u.getPasswordHash(),req.getPassword())){
                     VerificationCodeHandler handler = VerificationCodeHandler.getInstance();
                     VerificationCode latestCode = handler.getLatestCodeForUser(u.getID());
 
@@ -234,18 +234,18 @@ public class AuthResource {
     @POST
     @Path("/signup")
     public Response signup(LoginRequest req){
-        if(req.username == null || req.password == null || req.email == null){
+        if(req.getUsername() == null || req.getPassword() == null || req.getEmail() == null){
             ApiResponse<Void> resp = new ApiResponse<>(false, "All fields must be completed", null);
             return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
         }
         for  (User u: UserHandler.getInstance().getAllUsers()) {
-            if (u.getUsername().equals(req.username) || u.getEmail().equals(req.email)) {
+            if (u.getUsername().equals(req.getUsername()) || u.getEmail().equals(req.getEmail())) {
                 ApiResponse<Void> resp = new ApiResponse<>(false, "User with this email / username exists", null);
                 return Response.status(Response.Status.UNAUTHORIZED).entity(resp).build();
             }
         }
-        String passwordHash =  Encrypt.hashPassword(req.password);
-        User u = new User(req.username,passwordHash, UserRole.FREE,req.email);
+        String passwordHash =  Encrypt.hashPassword(req.getPassword());
+        User u = new User(req.getUsername(),passwordHash, UserRole.FREE,req.getEmail());
         UserHandler.getInstance().addUser(u);
         ApiResponse<Void> resp = new ApiResponse<>(true, "User registered successfully", null);
         return Response.status(Response.Status.OK).entity(resp).build();
@@ -279,12 +279,12 @@ public class AuthResource {
         }
 
         for (User u : UserHandler.getInstance().getAllUsers()) {
-            if (u.getUsername().equals(req.username)) {
-                if (!req.username.equals(extractUserId(token))) {
+            if (u.getUsername().equals(req.getUsername())) {
+                if (!req.getUsername().equals(extractUserId(token))) {
                     ApiResponse<Void> resp = new ApiResponse<>(false, "Nice try , wrong username for token", null);
                     return Response.status(Response.Status.BAD_REQUEST).entity(resp).build();
                 } else {
-                    u.setPasswordHash(Encrypt.hashPassword(req.password));
+                    u.setPasswordHash(Encrypt.hashPassword(req.getPassword()));
                     UserHandler.getInstance().updateUser(u);
                     ApiResponse<Void> resp = new ApiResponse<>(true, "Reset success", null);
                     ForgotPasswordHandler.getInstance().deleteToken(
