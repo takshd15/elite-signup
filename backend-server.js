@@ -48,7 +48,7 @@ app.post('/v1/auth/pre-signup', (req, res) => {
     const exists = betaSignups.find(signup => signup.email === email);
     if (exists) {
         console.log('Duplicate email detected:', email);
-        return res.status(401).json({
+        return res.status(409).json({
             success: false,
             message: "User with this email already exists",
             data: null
