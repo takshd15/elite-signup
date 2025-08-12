@@ -236,14 +236,17 @@ export default function HomePage() {
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    setErrorMessage('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMessage('')
     
     try {
       // Call the backend API
@@ -260,15 +263,16 @@ export default function HomePage() {
       })
 
       const contentType = response.headers.get('content-type') || ''
-      if (response.ok && contentType.includes('application/json')) {
-        await response.json()
+      let data: any
+      if (contentType.includes('application/json')) {
+        data = await response.json()
       } else {
-        await response.text()
+        const text = await response.text()
+        data = { message: text }
       }
 
       if (response.ok) {
         setIsSubmitted(true)
-        // Reset form after 3 seconds
         setTimeout(() => {
           setIsSubmitted(false)
           setFormData({ name: '', email: '' })
@@ -283,13 +287,13 @@ export default function HomePage() {
             message = 'Server error. Please try again later.'
             break
           default:
-            message = 'An error occurred. Please try again.'
+            message = data.message || 'An error occurred. Please try again.'
         }
-        alert(message)
+        setErrorMessage(message)
       }
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert('Failed to connect to server. Please try again later.')
+      setErrorMessage('Failed to connect to server. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
@@ -783,6 +787,9 @@ export default function HomePage() {
                    </motion.div>
                  ) : (
                    <form onSubmit={handleSubmit} className="space-y-6">
+                     {errorMessage && (
+                       <p className="text-red-400 text-sm" role="alert">{errorMessage}</p>
+                     )}
                      <div>
                        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">
                          Full Name
