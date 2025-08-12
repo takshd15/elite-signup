@@ -259,7 +259,12 @@ export default function HomePage() {
         })
       })
 
-      const data = await response.json()
+      const contentType = response.headers.get('content-type') || ''
+      if (response.ok && contentType.includes('application/json')) {
+        await response.json()
+      } else {
+        await response.text()
+      }
 
       if (response.ok) {
         setIsSubmitted(true)
@@ -269,8 +274,18 @@ export default function HomePage() {
           setFormData({ name: '', email: '' })
         }, 3000)
       } else {
-        // Handle error (e.g., user already exists)
-        alert(data.message || 'An error occurred. Please try again.')
+        let message
+        switch (response.status) {
+          case 400:
+            message = 'Invalid request. Please check your input and try again.'
+            break
+          case 500:
+            message = 'Server error. Please try again later.'
+            break
+          default:
+            message = 'An error occurred. Please try again.'
+        }
+        alert(message)
       }
     } catch (error) {
       console.error('Error submitting form:', error)
