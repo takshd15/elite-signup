@@ -236,17 +236,17 @@ export default function HomePage() {
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
-    setErrorMessage('')
+    setErrorMessage(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setErrorMessage('')
+    setErrorMessage(null)
     
     try {
       // Call the backend API
@@ -264,7 +264,7 @@ export default function HomePage() {
 
       const contentType = response.headers.get('content-type') || ''
       let data: any
-      if (contentType.includes('application/json')) {
+      if (response.ok && contentType.includes('application/json')) {
         data = await response.json()
       } else {
         const text = await response.text()
