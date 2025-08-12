@@ -8,6 +8,7 @@ import { ArrowRight, CheckCircle, Trophy, Users, BarChart2, Zap, Star, User } fr
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { cn } from "@/lib/utils"
 
@@ -236,6 +237,7 @@ export default function HomePage() {
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -243,8 +245,25 @@ export default function HomePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage(null)
+
+    // Client-side validation
+    const trimmedName = formData.name.trim()
+    const trimmedEmail = formData.email.trim()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!trimmedName || !trimmedEmail) {
+      setErrorMessage('Please provide both your name and email address.')
+      return
+    }
+
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email address.')
+      return
+    }
+
     setIsSubmitting(true)
-    
+
     try {
       // Call the backend API
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'
@@ -254,8 +273,8 @@ export default function HomePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.name,
-          email: formData.email
+          username: trimmedName,
+          email: trimmedEmail
         })
       })
 
@@ -269,12 +288,12 @@ export default function HomePage() {
           setFormData({ name: '', email: '' })
         }, 3000)
       } else {
-        // Handle error (e.g., user already exists)
-        alert(data.message || 'An error occurred. Please try again.')
+        // Handle server errors (e.g., user already exists)
+        setErrorMessage(data.message || 'An unexpected error occurred. Please try again.')
       }
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert('Failed to connect to server. Please try again later.')
+      setErrorMessage('Failed to connect to server. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
@@ -767,7 +786,12 @@ export default function HomePage() {
                      <p className="text-zinc-300">You'll be notified when the beta launches in September 2024.</p>
                    </motion.div>
                  ) : (
-                   <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {errorMessage && (
+                      <Alert variant="destructive" className="animate-shake">
+                        <AlertDescription>{errorMessage}</AlertDescription>
+                      </Alert>
+                    )}
                      <div>
                        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">
                          Full Name
