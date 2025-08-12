@@ -19,7 +19,7 @@ export function Footer() {
           {/* Logo and Description */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/Annotation 2025-07-18 034118.png" alt="ELITESCORE logo" className="h-8 w-8 object-contain" />
+              <img src="/logo.png" alt="ELITESCORE logo" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent">
                 ELITESCORE
               </span>

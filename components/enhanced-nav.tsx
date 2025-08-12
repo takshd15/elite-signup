@@ -66,7 +66,7 @@ export function EnhancedNav({ theme = "dark", onThemeToggle }: EnhancedNavProps)
             transition={{ delay: 0.2 }}
             className="relative h-8 w-8 flex items-center justify-center"
           >
-            <img src="/Annotation 2025-07-18 034118.png" alt="ELITESCORE logo" className="h-8 w-8 object-contain" />
+            <img src="/logo.png" alt="ELITESCORE logo" className="h-8 w-8 object-contain" />
           </motion.div>
           <motion.span
             className="text-xl font-bold bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent hidden sm:inline-block"
