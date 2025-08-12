@@ -45,7 +45,7 @@ const itemVariants = {
   {
     name: "Calin Baculescu",
     role: "Tech Lead Developer",
-    image: "/placeholder-user.jpg",
+    image: "/calin.jpeg",
     content:
       "Developing this app has deepened my understanding of self-improvement. If you’re ready to elevate your life, try our product and you’ll see the difference.",
     rating: 5,
@@ -53,7 +53,7 @@ const itemVariants = {
   {
     name: "Taksh Dange",
     role: "Founder",
-    image: "/placeholder-user.jpg",
+    image: "/taksh.jpeg",
     content:
       "With EliteScore, I want to help everyone achieve their goals and stay motivated. Learn from the best, keep dreaming, keep achieving.",
     rating: 5,
@@ -61,7 +61,7 @@ const itemVariants = {
   {
     name: "Givanna Lopez",
     role: "Marketing Lead & Strategist",
-    image: "/placeholder-user.jpg",
+    image: "/givanna.jpeg",
     content:
       "Help design the experience you want: motivating quests, fair leaderboards, and a Resume Score™ you’re proud to show.",
     rating: 5,
@@ -418,7 +418,7 @@ export default function HomePage() {
                 
                 
                 <Image
-                  src="/placeholder-logo.svg"
+                  src="/logo.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
                   height={700}
