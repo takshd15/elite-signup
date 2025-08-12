@@ -287,8 +287,11 @@ export default function HomePage() {
           setIsSubmitted(false)
           setFormData({ name: '', email: '' })
         }, 3000)
+      } else if (response.status === 409) {
+        // Duplicate email
+        setErrorMessage('User with this email exists')
       } else {
-        // Handle server errors (e.g., user already exists)
+        // Handle other server errors
         setErrorMessage(data.message || 'An unexpected error occurred. Please try again.')
       }
     } catch (error) {
@@ -418,6 +421,7 @@ export default function HomePage() {
                 
                 
                 <Image
+                  unoptimized
                   src="/logo.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
