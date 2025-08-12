@@ -418,14 +418,14 @@ export default function HomePage() {
                 
                 
                 <Image
-                  src="/ChatGPT Image Aug 5, 2025, 07_26_16 AM.png"
+                  src="/logo.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
                   height={700}
-                    className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
+                  className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
                   priority
                   quality={100}
-                    loading="eager"
+                  loading="eager"
                 />
                 
                 
