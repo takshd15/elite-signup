@@ -106,10 +106,10 @@ const itemVariants = {
 // Simple static background for better performance
 function SimpleBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute left-0 top-0 -z-10 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-400/10 blur-[120px]" />
-      <div className="absolute right-0 top-0 -z-10 h-[900px] w-[700px] rounded-full bg-gradient-to-bl from-purple-600/25 to-pink-500/15 blur-[110px]" />
-        </div>
+    <div className="fixed inset-0 overflow-hidden -z-10">
+      <div className="absolute left-0 top-0 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-400/10 blur-[120px]" />
+      <div className="absolute right-0 top-0 h-[900px] w-[700px] rounded-full bg-gradient-to-bl from-purple-600/25 to-pink-500/15 blur-[110px]" />
+    </div>
   )
 }
 
@@ -300,7 +300,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden relative">
 
       
       {/* App name at the top */}
@@ -418,14 +418,14 @@ export default function HomePage() {
                 
                 
                 <Image
-                  src="/logo.png"
+                  src = "/logo.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
                   height={700}
-                  className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
+                    className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
                   priority
                   quality={100}
-                  loading="eager"
+                    loading="eager"
                 />
                 
                 
@@ -712,21 +712,6 @@ export default function HomePage() {
 
       {/* Beta Signup Section */}
       <section id="beta-signup" className="py-16 sm:py-20 px-4 relative overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 opacity-20"
-          animate={{
-            backgroundImage: [
-              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
-              "radial-gradient(circle at 80% 50%, #a259ff 0%, transparent 50%)",
-              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
-            ],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
         
         <div className="container mx-auto max-w-4xl px-4 relative z-10">
           <motion.div 
