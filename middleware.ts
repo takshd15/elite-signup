@@ -6,6 +6,11 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
-  if (req.nextUrl.pathname === '/') return NextResponse.next();
+  const { pathname } = req.nextUrl;
+  // Allow requests for files (e.g., images) and the root path to pass through
+  if (pathname === '/' || pathname.includes('.')) {
+    return NextResponse.next();
+  }
+  // Redirect all other routes to the landing page
   return NextResponse.redirect(new URL('/', req.url));
 }
