@@ -105,12 +105,7 @@ const itemVariants = {
 
 // Simple static background for better performance
 function SimpleBackground() {
-  return (
-    <div className="fixed inset-0 overflow-hidden -z-10">
-      <div className="absolute left-0 top-0 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-400/10 blur-[120px]" />
-      <div className="absolute right-0 top-0 h-[900px] w-[700px] rounded-full bg-gradient-to-bl from-purple-600/25 to-pink-500/15 blur-[110px]" />
-    </div>
-  )
+  return null // Remove all background elements that cause divisions
 }
 
 // Interactive stat card component with enhanced animations
@@ -300,7 +295,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/40 to-blue-950/30 overflow-x-hidden">
 
       
       {/* App name at the top */}
@@ -418,15 +413,14 @@ export default function HomePage() {
                 
                 
                 <Image
-                  src="/ChatGPT Image Aug 5, 2025, 05_37_53 AM.png"
+                  src="/ChatGPT Image Aug 5, 2025, 07_26_16 AM.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
                   height={700}
-                  className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
+                    className="object-contain max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] w-full h-auto relative z-10 drop-shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all duration-300"
                   priority
                   quality={100}
-                  loading="eager"
-                  unoptimized
+                    loading="eager"
                 />
                 
                 
@@ -685,16 +679,21 @@ export default function HomePage() {
                       </p>
                     <div className="flex items-center gap-4">
                         <motion.div 
-                          className="w-12 h-12 rounded-full overflow-hidden border-2 border-zinc-700"
+                          className="w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-700"
                           whileHover={{ scale: 1.1, borderColor: "rgba(43, 188, 255, 0.5)" }}
                         >
                         <Image
                             src={testimonial.image}
                           alt={`EliteScore testimonial user ${testimonial.name}`}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
-                            loading="lazy"
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover object-center"
+                          style={{ 
+                            objectPosition: testimonial.name === 'Taksh Dange' || testimonial.name === 'Givanna Lopez' 
+                              ? 'center 30%' 
+                              : 'center top' 
+                          }}
+                          loading="lazy"
                         />
                         </motion.div>
                       <div>
