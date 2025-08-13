@@ -45,7 +45,7 @@ const itemVariants = {
   {
     name: "Calin Baculescu",
     role: "Tech Lead Developer",
-    image: "/placeholder-user.jpg",
+    image: "/calin.jpeg",
     content:
       "Developing this app has deepened my understanding of self-improvement. If you’re ready to elevate your life, try our product and you’ll see the difference.",
     rating: 5,
@@ -53,7 +53,7 @@ const itemVariants = {
   {
     name: "Taksh Dange",
     role: "Founder",
-    image: "/placeholder-user.jpg",
+    image: "/taksh.jpeg",
     content:
       "With EliteScore, I want to help everyone achieve their goals and stay motivated. Learn from the best, keep dreaming, keep achieving.",
     rating: 5,
@@ -61,7 +61,7 @@ const itemVariants = {
   {
     name: "Givanna Lopez",
     role: "Marketing Lead & Strategist",
-    image: "/placeholder-user.jpg",
+    image: "/givanna.jpeg",
     content:
       "Help design the experience you want: motivating quests, fair leaderboards, and a Resume Score™ you’re proud to show.",
     rating: 5,
@@ -105,12 +105,7 @@ const itemVariants = {
 
 // Simple static background for better performance
 function SimpleBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute left-0 top-0 -z-10 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-400/10 blur-[120px]" />
-      <div className="absolute right-0 top-0 -z-10 h-[900px] w-[700px] rounded-full bg-gradient-to-bl from-purple-600/25 to-pink-500/15 blur-[110px]" />
-        </div>
-  )
+  return null // Remove all background elements that cause divisions
 }
 
 // Interactive stat card component with enhanced animations
@@ -684,16 +679,21 @@ export default function HomePage() {
                       </p>
                     <div className="flex items-center gap-4">
                         <motion.div 
-                          className="w-12 h-12 rounded-full overflow-hidden border-2 border-zinc-700"
+                          className="w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-700"
                           whileHover={{ scale: 1.1, borderColor: "rgba(43, 188, 255, 0.5)" }}
                         >
                         <Image
                             src={testimonial.image}
                           alt={`EliteScore testimonial user ${testimonial.name}`}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
-                            loading="lazy"
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover object-center"
+                          style={{ 
+                            objectPosition: testimonial.name === 'Taksh Dange' || testimonial.name === 'Givanna Lopez' 
+                              ? 'center 30%' 
+                              : 'center top' 
+                          }}
+                          loading="lazy"
                         />
                         </motion.div>
                       <div>
@@ -712,21 +712,6 @@ export default function HomePage() {
 
       {/* Beta Signup Section */}
       <section id="beta-signup" className="py-16 sm:py-20 px-4 relative overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 opacity-20"
-          animate={{
-            backgroundImage: [
-              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
-              "radial-gradient(circle at 80% 50%, #a259ff 0%, transparent 50%)",
-              "radial-gradient(circle at 20% 50%, #2bbcff 0%, transparent 50%)",
-            ],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
         
         <div className="container mx-auto max-w-4xl px-4 relative z-10">
           <motion.div 
