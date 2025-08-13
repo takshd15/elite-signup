@@ -413,7 +413,7 @@ export default function HomePage() {
                 
                 
                 <Image
-                  src="/ChatGPT Image Aug 5, 2025, 07_26_16 AM.png"
+                  src="/elite-logo.png"
                   alt="EliteScore logo with high-quality gradient dotted ring"
                   width={700}
                   height={700}
