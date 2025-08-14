@@ -47,7 +47,7 @@ const itemVariants = {
     role: "Tech Lead Developer",
     image: "/calin.jpeg",
     content:
-      "Developing this app has deepened my understanding of self-improvement. If you’re ready to elevate your life, try our product and you’ll see the difference.",
+      "Developing this app has deepened my understanding of self-improvement. If you're ready to elevate your life, try our product and you'll see the difference.",
     rating: 5,
   },
   {
@@ -63,7 +63,15 @@ const itemVariants = {
     role: "Marketing Lead & Strategist",
     image: "/givanna.jpeg",
     content:
-      "Help design the experience you want: motivating quests, fair leaderboards, and a Resume Score™ you’re proud to show.",
+      "Help design the experience you want: motivating quests, fair leaderboards, and a Resume Score™ you're proud to show.",
+    rating: 5,
+  },
+  {
+    name: "Renzo Zegers",
+    role: " Core Developer",
+    image: "/renzo.jpeg",
+    content:
+      "When I joined the EliteScore development team, I discovered something unexpected , I wasn't just building a tool to help others reach their goals, I was creating a system that made achieving my own goals so much more streamlined and rewarding.",
     rating: 5,
   },
 ]
@@ -639,7 +647,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={index}
@@ -689,7 +697,7 @@ export default function HomePage() {
                           height={64}
                           className="w-full h-full object-cover object-center"
                           style={{ 
-                            objectPosition: testimonial.name === 'Taksh Dange' || testimonial.name === 'Givanna Lopez' 
+                            objectPosition: testimonial.name === 'Taksh Dange' || testimonial.name === 'Givanna Lopez' || testimonial.name === 'Renzo Zegers'
                               ? 'center 30%' 
                               : 'center top' 
                           }}
