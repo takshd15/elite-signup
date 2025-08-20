@@ -746,7 +746,7 @@ export default function HomePage() {
                     repeat: Infinity,
                   }}
                 />
-                Beta Launch - September 2024
+                Beta Launch - September 2025
               </motion.div>
               
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-widest uppercase bg-gradient-to-r from-[#2bbcff] to-[#a259ff] bg-clip-text text-transparent mb-6">
@@ -776,7 +776,7 @@ export default function HomePage() {
                        <CheckCircle className="h-8 w-8 text-green-400" />
                      </div>
                      <h3 className="text-xl font-bold text-white mb-2">Welcome to the Waitlist!</h3>
-                     <p className="text-zinc-300">You'll be notified when the beta launches in September 2024.</p>
+                     <p className="text-zinc-300">You'll be notified when the beta launches in September 2025.</p>
                    </motion.div>
                  ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -848,10 +848,12 @@ export default function HomePage() {
                 
                 <div className="mt-6 text-center">
                   <p className="text-xs text-zinc-400">
-                    By joining the waitlist, you'll be notified when the beta launches in September 2024.
+                    By joining the waitlist, you'll be notified when the beta launches in September 2025.
                   </p>
                 </div>
               </div>
+
+              
             </motion.div>
 
             <motion.div
