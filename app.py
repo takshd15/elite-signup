@@ -2,24 +2,21 @@ import os
 import tempfile
 from typing import Dict, List
 
-# Load .env (works locally and on Heroku if committed)
-from dotenv import load_dotenv, find_dotenv
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
-
-load_dotenv(find_dotenv(), override=False)
-
-# 3rd-party
-import nltk
 from nltk.data import find
+import nltk
 from spacy.util import get_package_path
 from pyresparser import ResumeParser
+
 from cv_rater import rate_dict
 
 # ---------- Config ----------
+# NLTK data directory (Heroku will prefer $NLTK_DATA if set)
 NLTK_DATA_DIR = os.getenv("NLTK_DATA", os.path.join(os.getcwd(), "nltk_data"))
-os.environ["NLTK_DATA"] = NLTK_DATA_DIR  # ensure nltk sees it
+os.environ["NLTK_DATA"] = NLTK_DATA_DIR
 
+# Mapping of NLTK packages to their internal paths
 NLTK_RESOURCES: Dict[str, str] = {
     "punkt": "tokenizers/punkt",
     "stopwords": "corpora/stopwords",
@@ -28,10 +25,25 @@ NLTK_RESOURCES: Dict[str, str] = {
     "maxent_ne_chunker": "chunkers/maxent_ne_chunker",
     "words": "corpora/words",
 }
+
+# spaCy model name (default: small English model)
 SPACY_MODEL = os.getenv("SPACY_MODEL", "en_core_web_sm")
 
-# searches for all nltk needed packages and returns boolean
+# ---------- FastAPI instance ----------
+app = FastAPI(title="Resume Parser & Scorer API")
+
+
+# ---------- NLTK Utility Functions ----------
 def nltk_status(resources: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+    """
+    Checks the availability of all required NLTK resources.
+
+    Args:
+        resources (Dict[str, str]): Mapping of resource name to NLTK internal path.
+
+    Returns:
+        Dict[str, Dict[str, str]]: Dictionary containing availability and path/error.
+    """
     status = {}
     for name, path in resources.items():
         try:
@@ -41,8 +53,18 @@ def nltk_status(resources: Dict[str, str]) -> Dict[str, Dict[str, str]]:
             status[name] = {"available": False, "error": str(e)}
     return status
 
-# searches for the missing resources and tries to download them
+
 def ensure_nltk(resources: Dict[str, str], auto_download: bool = False) -> List[str]:
+    """
+    Ensure all required NLTK resources exist. Optionally download missing ones.
+
+    Args:
+        resources (Dict[str, str]): Mapping of NLTK resources.
+        auto_download (bool): If True, downloads missing resources at runtime.
+
+    Returns:
+        List[str]: List of missing resource names after attempted downloads.
+    """
     missing = []
     for name, path in resources.items():
         try:
@@ -54,22 +76,42 @@ def ensure_nltk(resources: Dict[str, str], auto_download: bool = False) -> List[
         for name in list(missing):
             try:
                 nltk.download(name, download_dir=NLTK_DATA_DIR, quiet=True)
-                find(resources[name])  # verify
+                find(resources[name])
                 missing.remove(name)
             except Exception:
                 pass
     return missing
 
-# searches for the spacy language model and return boolean
+
+# ---------- spaCy Utility Functions ----------
 def spacy_status(model_name: str) -> Dict[str, str]:
+    """
+    Checks if the spaCy model is installed and available.
+
+    Args:
+        model_name (str): Name of the spaCy model.
+
+    Returns:
+        Dict[str, str]: Availability status and optional error message.
+    """
     try:
         get_package_path(model_name)
         return {"available": True, "model": model_name}
     except Exception as e:
         return {"available": False, "model": model_name, "error": str(e)}
 
-# searches for the missing resources and tries to download them
+
 def ensure_spacy(model_name: str, auto_download: bool = False) -> bool:
+    """
+    Ensure the spaCy model is available. Optionally download at runtime.
+
+    Args:
+        model_name (str): Name of the spaCy model.
+        auto_download (bool): If True, attempt download if model is missing.
+
+    Returns:
+        bool: True if model is available, False otherwise.
+    """
     ok = spacy_status(model_name)["available"]
     if ok:
         return True
@@ -82,12 +124,15 @@ def ensure_spacy(model_name: str, auto_download: bool = False) -> bool:
             return False
     return False
 
-app = FastAPI(title="Local Resume Parser (pyresparser)")
 
+# ---------- FastAPI Events ----------
 @app.on_event("startup")
 def _startup():
-    auto_nltk = os.getenv("AUTO_DOWNLOAD_NLTK", "false").lower() in {"1","true","yes"}
-    auto_spacy = os.getenv("AUTO_DOWNLOAD_SPACY", "false").lower() in {"1","true","yes"}
+    """
+    Startup event handler: verifies NLTK and spaCy resources.
+    """
+    auto_nltk = os.getenv("AUTO_DOWNLOAD_NLTK", "false").lower() in {"1", "true", "yes"}
+    auto_spacy = os.getenv("AUTO_DOWNLOAD_SPACY", "false").lower() in {"1", "true", "yes"}
 
     missing_nltk = ensure_nltk(NLTK_RESOURCES, auto_download=auto_nltk)
     if missing_nltk:
@@ -98,13 +143,21 @@ def _startup():
     sp_ok = ensure_spacy(SPACY_MODEL, auto_download=auto_spacy)
     print(f"[startup] spaCy model '{SPACY_MODEL}' available: {sp_ok}")
 
-# returns the existence of all the needed external models
+
+# ---------- Health Check ----------
 @app.get("/health")
 def health():
+    """
+    Returns health status and availability of required NLP resources.
+
+    Returns:
+        JSONResponse: Dictionary with NLTK, spaCy, and overall status.
+    """
     nstatus = nltk_status(NLTK_RESOURCES)
     missing = [k for k, v in nstatus.items() if not v["available"]]
     sstatus = spacy_status(SPACY_MODEL)
     ok = (len(missing) == 0) and sstatus["available"]
+
     payload = {
         "status": "ok" if ok else "degraded",
         "nltk_data_dir": NLTK_DATA_DIR,
@@ -114,26 +167,43 @@ def health():
     }
     return JSONResponse(status_code=200 if ok else 503, content=payload)
 
-# transforms the pdf to json and then rates it
+
+# ---------- Resume Parsing & Scoring ----------
 @app.post("/api/resume/score")
 async def parse_resume(file: UploadFile = File(...)):
+    """
+    Parses an uploaded resume and returns a JSON rating.
+
+    Args:
+        file (UploadFile): Resume file (PDF/DOCX).
+
+    Returns:
+        JSONResponse: Parsed resume data with rating.
+
+    Raises:
+        HTTPException: If parsing fails.
+    """
     suffix = os.path.splitext(file.filename or "")[1] or ".pdf"
     path = None
-    # turns the pdf into  temp file
+
     try:
+        # Write file to temporary path
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp.write(await file.read())
             path = tmp.name
 
-        #     the actual json parsing
+        # Parse resume to JSON
         data = ResumeParser(path).get_extracted_data() or {}
+
+        # Rate parsed data
         output = rate_dict(data)
         return JSONResponse(content=output, media_type="application/json")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Parse error: {e}")
     finally:
+        # Cleanup temp file
         if path:
-            try: os.remove(path)
-            except Exception: pass
-
-# curl -s -X POST http://127.0.0.1:9000/api/resume/score -F "file=@C:\Users\Emilia\PycharmProjects\PythonProject\MITCAPD-PostDocII.pdf"
+            try:
+                os.remove(path)
+            except Exception:
+                pass
