@@ -13,8 +13,9 @@ from cv_rater import rate_dict
 
 # ---------- Config ----------
 # NLTK data directory (Heroku will prefer $NLTK_DATA if set)
-# NLTK_DATA_DIR = os.getenv("NLTK_DATA", os.path.join(os.getcwd(), "nltk_data"))
-# os.environ["NLTK_DATA"] = NLTK_DATA_DIR
+
+NLTK_DATA_DIR = os.getenv("NLTK_DATA", os.path.join(os.getcwd(), "nltk_data"))
+os.environ["NLTK_DATA"] = NLTK_DATA_DIR
 
 # Mapping of NLTK packages to their internal paths
 NLTK_RESOURCES: Dict[str, str] = {
