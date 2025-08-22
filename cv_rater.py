@@ -496,6 +496,204 @@ class CVRater:
 
         return max(0.0, min(100.0, 0.45 * breadth + 0.30 * coverage + 0.25 * depth))
 
+    def _explain(self, f: Dict[str, Any], comps: ComponentScores) -> Dict[str, Any]:
+        """
+        Build a structured, human-readable explanation aligned with the current
+        heuristic scoring (no ML dependencies).
+
+        Returns:
+          {
+            "highlights": [str, ...],
+            "top_archetype_matches": [{"name": str, "match_pct": float}],
+            "component_details": {...},
+            "notes": {"strengths": [..], "weaknesses": [..]}
+          }
+        """
+        import re
+        txt = (f.get("aggregate_text") or "")
+        low = txt.lower()
+        tokens = set(_tokenize(low))
+        bullets = len(re.findall(r"(^|\n)\s*[\-\u2022\u25CF\u25A0•]", txt))
+        years = float(f.get("total_experience_years") or 0.0)
+        skills = {s.lower() for s in (f.get("skills") or [])}
+
+        # ---------- Highlights (signals that recruiters scan for quickly)
+        highlights: List[str] = []
+        if re.search(r"\b(intern|internship)\b", low):
+            highlights.append("Internship experience detected.")
+        if re.search(r"\b(vice[-\s]?president|leader|led|managed|director|head)\b", low):
+            highlights.append("Leadership/ownership signals present.")
+        if re.search(r"\b(published|publication|peer[-\s]?review|in press|doi|arxiv)\b", low):
+            highlights.append("Publication or knowledge-sharing track record.")
+        if re.search(r"\b(deployed|shipped|released|production)\b", low):
+            highlights.append("Evidence of shipping to production.")
+        if re.search(r"\b(taught|teaching|lecturer|mentoring|tutoring|supervised)\b", low):
+            highlights.append("Teaching/mentoring experience.")
+        if re.search(r"\b(docker|kubernetes|ci/?cd|pipeline|terraform|ansible)\b", low):
+            highlights.append("DevOps/automation exposure.")
+        if re.search(r"\b(spanish|bilingual|multilingual|english|french|german|mandarin|hindi|arabic)\b", low):
+            highlights.append("Language/cross-cultural capability.")
+        if len(re.findall(r"\b\d+(?:\.\d+)?\s*%|\$\s*\d|\b\d{2,}\b", low)) >= 2:
+            highlights.append("Quantified outcomes present (%, $, counts).")
+        if bullets >= 10:
+            highlights.append("Well-structured resume with clear bulleting.")
+        if any(t in low for t in ("sop", "iso", "rohs", "gmp", "glp", "compliance", "regulatory", "quality")):
+            highlights.append("Quality/standards/compliance awareness.")
+
+        # ---------- Rule-based “archetype” ranking (token overlap + phrase hits)
+        def _rank_archetypes_rulebased(text: str) -> List[Dict[str, Any]]:
+            sw = {
+                "the","a","an","and","or","to","for","of","in","on","with","by","from","as","at",
+                "this","that","these","those","be","is","are","was","were","will","can","able",
+                "using","use","used","via","per","based","including","include","across"
+            }
+            def toks(s: str) -> Set[str]:
+                return {t for t in _tokenize(s.lower()) if t not in sw}
+
+            T = toks(text)
+            if not self.archetypes:
+                return []
+
+            scores = []
+            for name, desc in self.archetypes.items():
+                D = toks(desc)
+                if not D:
+                    continue
+                # token overlap
+                overlap = len(T & D)
+
+                # light phrase hits (split desc to semi-phrases)
+                phrases = [p.strip() for p in re.split(r"[;,/]| and | or ", desc.lower()) if p.strip()]
+                phrase_hits = 0
+                for p in phrases:
+                    if len(p) >= 8 and p in text.lower():
+                        phrase_hits += 2  # weight phrases more than single tokens
+
+                raw = overlap + phrase_hits
+                scores.append((name, raw, overlap, phrase_hits))
+
+            if not scores:
+                return []
+
+            max_raw = max(s for _, s, _, _ in scores) or 1
+            ranked = sorted(scores, key=lambda x: x[1], reverse=True)[:3]
+            out = []
+            for name, raw, overlap, phrase_hits in ranked:
+                pct = round(100.0 * raw / max_raw, 1)
+                out.append({"name": name, "match_pct": pct})
+            return out
+
+        top_arch = _rank_archetypes_rulebased(txt)
+
+        # ---------- Component details (verbalized evidence that matches _score_* logic)
+        # Education evidence
+        edu_bits = []
+        deg = (f.get("degree_text") or "").lower()
+        if any(k in deg for k in ("phd", "doctor", "md", "jd", "dphil")):
+            edu_bits.append("Doctoral-level degree signals.")
+        elif any(k in deg for k in ("master", "msc", "m.s", "m.eng", "ms ")):
+            edu_bits.append("Master’s-level degree signals.")
+        elif any(k in deg for k in ("bachelor", "b.sc", "beng", "b.s", "ba ")):
+            edu_bits.append("Bachelor-level degree signals.")
+        elif deg.strip():
+            edu_bits.append("Degree present (level not clearly parsed).")
+
+        stem_hits = [t for t in self.stem_terms if t in deg]
+        if stem_hits:
+            edu_bits.append(f"STEM keywords found: {', '.join(sorted(stem_hits)[:6])}{'…' if len(stem_hits)>6 else ''}")
+
+        college = (f.get("college_text") or "").strip()
+        if college:
+            edu_bits.append("College/University name present.")
+        email = f.get("email") or ""
+        if isinstance(email, str) and email.endswith(".edu"):
+            edu_bits.append("Academic (.edu) email detected.")
+
+        # Experience evidence
+        exp_bits = [f"Estimated total experience ~{years:.1f} years."]
+        # date spans seen?
+        spans = re.findall(r"(\d{4})\s*[-\u2013]\s*(\d{4}|present|now|current)", low)
+        if spans:
+            exp_bits.append(f"Date spans detected: {len(spans)}.")
+        # role indicators
+        for kw, label in [
+            ("intern", "Internship"),
+            ("research assistant", "Research assistant"),
+            ("postdoc", "Postdoc"),
+            ("lecturer", "Lecturing/teaching"),
+            ("manager", "Management/leadership"),
+            ("lead", "Lead role"),
+        ]:
+            if kw in low:
+                exp_bits.append(f"{label} signal present.")
+        # tooling examples
+        tk_hits = [kw for kw in self.tool_keywords if kw in low]
+        if tk_hits:
+            sample = ", ".join(sorted(tk_hits)[:8])
+            exp_bits.append(f"Process/tooling keywords: {sample}{'…' if len(tk_hits)>8 else ''}")
+        if bullets:
+            exp_bits.append(f"Bullet structure count: {bullets}.")
+
+        # Skills evidence
+        unique_skills = sorted(skills)
+        sk_bits = [f"{len(unique_skills)} unique skills parsed."]
+        if unique_skills:
+            sk_bits.append("Examples: " + ", ".join(unique_skills[:10]) + ("…" if len(unique_skills) > 10 else ""))
+
+        # Coverage buckets (mirror _score_skills buckets)
+        buckets = {
+            "programming": {"python", "java", "c", "c++", "r", "sql"},
+            "cad_eng": {"solidworks", "cad", "engineering", "electrical", "mechanical"},
+            "analytics": {"analytics", "statistics", "excel", "microsoft office", "data analysis", "modeling"},
+            "science": {"biology", "chemistry", "physics", "geochemistry", "petrology", "earth", "ocean"},
+            "language": {"spanish"},
+            "teaching": {"teaching", "mentoring"},
+        }
+        covered = [b for b, keys in buckets.items() if any(k in skills for k in keys)]
+        if covered:
+            sk_bits.append("Coverage across buckets: " + ", ".join(covered))
+
+        strong = {"python", "java", "solidworks", "analytics", "biology", "chemistry", "physics", "modeling", "research"}
+        strong_hits = sorted(strong & skills)
+        if strong_hits:
+            sk_bits.append("Depth signals: " + ", ".join(strong_hits))
+
+        # AI-signal evidence (rule-based match snapshot)
+        ai_bits = []
+        if top_arch:
+            ai_bits.append("Top archetype alignment present.")
+        if any(k in low for k in ("vice-president", "vice president", "lecturer", "postdoc", "intern", "research assistant")):
+            ai_bits.append("Role keywords boosting alignment detected.")
+
+        # ---------- Final assembly
+        details = {
+            "education": round(comps.education, 1),
+            "experience": round(comps.experience, 1),
+            "skills": round(comps.skills, 1),
+            "ai_signal": round(comps.ai_signal, 1),
+        }
+
+        # Use your rule catalog to produce exactly 3 strengths & 3 weaknesses
+        notes = self._select_strengths_weaknesses(f, comps)
+
+        # Keep backward-compatible shape; encode evidence into highlights when useful
+        # (you can also surface evidence in your UI if you’d like)
+        # To keep payload compact, we won’t attach verbose evidence fields to JSON.
+        # If you prefer, add an "evidence" key here.
+
+        # Fold a few top evidence lines into highlights for readability
+        for msg in (edu_bits[:1] + exp_bits[:1] + sk_bits[:1]):
+            if msg and msg not in highlights:
+                highlights.append(msg)
+
+        return {
+            "highlights": highlights[:10],
+            "top_archetype_matches": top_arch,
+            "component_details": details,
+            "notes": notes,
+        }
+
+
     # -------- AI signal (embeddings if available; else BOW cosine) --------
 
     def _bow_similarity(self, text: str, labels: List[str], descs: List[str]) -> np.ndarray:
