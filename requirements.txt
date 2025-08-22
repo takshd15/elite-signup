@@ -72,8 +72,10 @@ wcwidth==0.2.13
 webencodings==0.5.1
 wrapt==1.17.3
 torch==2.1.0
-sentence-transformers==2.2.2
-transformers==4.36.0
+onnxruntime==1.18.0
+transformers==4.36.2
+tokenizers==0.14.1
+huggingface-hub==0.19.4
 
 pip==25.1.1
 setuptools==80.3.1
