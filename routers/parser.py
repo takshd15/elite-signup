@@ -2,14 +2,14 @@ import os
 import tempfile
 from typing import Dict, List
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import nltk
+from fastapi import UploadFile, File, HTTPException, APIRouter
 from fastapi.responses import JSONResponse
 from nltk.data import find
-import nltk
-from spacy.util import get_package_path
 from pyresparser import ResumeParser
+from spacy.util import get_package_path
 
-from cv_rater import rate_dict
+from helpers.cv_rater import rate_dict
 
 # ---------- Config ----------
 # NLTK data directory (Heroku will prefer $NLTK_DATA if set)
@@ -31,7 +31,7 @@ NLTK_RESOURCES: Dict[str, str] = {
 SPACY_MODEL = os.getenv("SPACY_MODEL", "en_core_web_sm")
 
 # ---------- FastAPI instance ----------
-app = FastAPI(title="Resume Parser & Scorer API")
+router = APIRouter()
 
 
 # ---------- NLTK Utility Functions ----------
@@ -125,28 +125,8 @@ def ensure_spacy(model_name: str, auto_download: bool = False) -> bool:
             return False
     return False
 
-
-# ---------- FastAPI Events ----------
-@app.on_event("startup")
-def _startup():
-    """
-    Startup event handler: verifies NLTK and spaCy resources.
-    """
-    auto_nltk = os.getenv("AUTO_DOWNLOAD_NLTK", "false").lower() in {"1", "true", "yes"}
-    auto_spacy = os.getenv("AUTO_DOWNLOAD_SPACY", "false").lower() in {"1", "true", "yes"}
-
-    missing_nltk = ensure_nltk(NLTK_RESOURCES, auto_download=auto_nltk)
-    if missing_nltk:
-        print(f"[startup] Missing NLTK resources: {missing_nltk}")
-    else:
-        print("[startup] NLTK resources available")
-
-    sp_ok = ensure_spacy(SPACY_MODEL, auto_download=auto_spacy)
-    print(f"[startup] spaCy model '{SPACY_MODEL}' available: {sp_ok}")
-
-
 # ---------- Health Check ----------
-@app.get("/health")
+@router.get("/health")
 def health():
     """
     Returns health status and availability of required NLP resources.
@@ -170,7 +150,7 @@ def health():
 
 
 # ---------- Resume Parsing & Scoring ----------
-@app.post("/api/resume/score")
+@router.post("/resume/score")
 async def parse_resume(file: UploadFile = File(...)):
     """
     Parses an uploaded resume and returns a JSON rating.

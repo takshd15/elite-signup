@@ -1,3 +1,4 @@
+pyjwt
 # --- API ---
 fastapi==0.116.1
 uvicorn==0.35.0
@@ -40,3 +41,9 @@ tzdata==2025.2
 requests==2.32.5
 regex==2025.7.34
 python-dotenv==1.0.1
+
+# -- SQL --
+sqlalchemy==2.0.43
+psycopg==3.2.9
+
+#remember that you did the challenges.pyi want you to design me another script that will be used only as testing purpuses for the verification of the challenges so that i do not run the db or nothing
