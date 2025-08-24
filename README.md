@@ -1,6 +1,17 @@
 # _ **XP and Challenges Service**_
 
+## Auth & Security
 
+- **Auth**: `Authorization: Bearer <JWT>` issued by the **Java** service.  
+  Python uses a verify-only JWT service to decode & validate (`sub` = user id).
+- **Optional gate**: middleware may enforce that the user’s **latest verification code** is *used, unexpired (≤ 15min), and from same IP*. If not satisfied, protected routes return **403**.
+- **Privacy**: verification never stores artifacts (no text, link content, or images). We store only:
+  - `submission_sha256` (hash of proof),
+  - `verifier` / `verifier_version`,
+  - `proof_signature` (HMAC attestation),
+  - status and timestamps.
+
+---
 
 # CV Rater (FastAPI · Heuristic, Heroku-friendly)
 
@@ -286,19 +297,6 @@ The **Challenges** module powers daily/monthly challenge assignment, verificatio
 - [Responses & Error Codes](#responses--error-codes)
 - [Environment Variables](#environment-variables)
 - [Notes & Best Practices](#notes--best-practices)
-
----
-
-## Auth & Security
-
-- **Auth**: `Authorization: Bearer <JWT>` issued by the **Java** service.  
-  Python uses a verify-only JWT service to decode & validate (`sub` = user id).
-- **Optional gate**: middleware may enforce that the user’s **latest verification code** is *used, unexpired (≤ 15min), and from same IP*. If not satisfied, protected routes return **403**.
-- **Privacy**: verification never stores artifacts (no text, link content, or images). We store only:
-  - `submission_sha256` (hash of proof),
-  - `verifier` / `verifier_version`,
-  - `proof_signature` (HMAC attestation),
-  - status and timestamps.
 
 ---
 
