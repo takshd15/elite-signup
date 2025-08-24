@@ -26,7 +26,7 @@ dbClient.connect().then(async () => {
   try {
     const fs = require('fs');
     const path = require('path');
-         const sqlFile = fs.readFileSync(path.join(__dirname, 'chat_tables_simple.sql'), 'utf8');
+         const sqlFile = fs.readFileSync(path.join(__dirname, 'enhanced_chat_tables.sql'), 'utf8');
     
     // Split SQL file into individual statements
     const statements = sqlFile.split(';').filter(stmt => stmt.trim().length > 0);
