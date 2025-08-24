@@ -28,11 +28,13 @@ from models.user_challenge import UserChallenge
 # =========================
 
 class DailyPack(Base):
-    __tablename__ = "daily_pack"
+    __tablename__ = "challenges_schema.daily_pack"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("app_user.id", ondelete="CASCADE"), nullable=False
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("public.users_auth.user_id", ondelete="CASCADE"),
+        nullable=False,
     )
     day: Mapped[date] = mapped_column(Date, nullable=False)  # e.g., 2025-08-23
 
@@ -62,7 +64,7 @@ class DailyPack(Base):
 
 
 class DailyPackItem(Base):
-    __tablename__ = "daily_pack_item"
+    __tablename__ = "challenges_schema.daily_pack_item"
 
     pack_id: Mapped[int] = mapped_column(ForeignKey("daily_pack.id", ondelete="CASCADE"), primary_key=True)
     user_challenge_id: Mapped[int] = mapped_column(
@@ -89,7 +91,7 @@ class DailyPackItem(Base):
 # =========================
 
 class MonthlyPack(Base):
-    __tablename__ = "monthly_pack"
+    __tablename__ = "challenges_schema.monthly_pack"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
@@ -124,7 +126,7 @@ class MonthlyPack(Base):
 
 
 class MonthlyPackItem(Base):
-    __tablename__ = "monthly_pack_item"
+    __tablename__ = "challenges_schema.monthly_pack_item"
 
     pack_id: Mapped[int] = mapped_column(ForeignKey("monthly_pack.id", ondelete="CASCADE"), primary_key=True)
     user_challenge_id: Mapped[int] = mapped_column(

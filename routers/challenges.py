@@ -122,7 +122,7 @@ def _sha256_bytes(data: bytes) -> str:
     return h.hexdigest()
 
 
-# ---------- selection helpers ----------
+# ---------- selection rater ----------
 def _completed_challenge_ids(db: Session, user_id: str) -> set[int]:
     rows = (
         db.query(UserChallenge.challenge_id)

@@ -25,7 +25,7 @@ def _compose_sqla_url() -> str:
 
     if not jdbc:
         # final fallback (local dev)
-        return "postgresql+psycopg://postgres:postgres@localhost:5432/elitescore"
+        return "postgresql+psycopg://postgres:postgres@localhost:5432/elitescore_test_local"
 
     # strip 'jdbc:' prefix if present
     if jdbc.startswith("jdbc:"):

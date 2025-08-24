@@ -3,13 +3,13 @@ from __future__ import annotations
 from sqlalchemy import String, Integer, Boolean, Text, Index, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import ARRAY
-from .base import Base
+from base import Base
 
 ALLOWED_CADENCE = ("daily", "monthly")
 ALLOWED_DIFFICULTY = ("easy", "medium", "hard")  # beta: 3 levels only
 
 class Challenge(Base):
-    __tablename__ = "challenge"
+    __tablename__ = "challenges_schema.challenge"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)

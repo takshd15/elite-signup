@@ -9,7 +9,7 @@ from nltk.data import find
 from pyresparser import ResumeParser
 from spacy.util import get_package_path
 
-from helpers.cv_rater import rate_dict
+from rater.cv_rater import rate_dict
 
 # ---------- Config ----------
 # NLTK data directory (Heroku will prefer $NLTK_DATA if set)

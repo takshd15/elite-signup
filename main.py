@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from routers.parser import ensure_spacy, ensure_nltk, NLTK_RESOURCES, SPACY_MODEL
 from routers import parser,challenges
+from security import auth_middleware
 
 app = FastAPI(title="Challenge Verification API", version="0.1.0")
 
@@ -26,6 +27,9 @@ def _startup():
     print(f"[startup] spaCy model '{SPACY_MODEL}' available: {sp_ok}")
 
 def create_app() -> FastAPI:
+
+    #Include middleware
+    app.add_middleware(auth_middleware.AuthCORSFilterMiddleware)
 
     # Include routers
     app.include_router(parser.router, prefix="/v1/parser", tags=["parser"])

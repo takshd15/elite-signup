@@ -26,13 +26,15 @@ ALLOWED_STATUS = ("assigned", "in_progress", "verified", "failed", "expired", "s
 
 
 class UserChallenge(Base):
-    __tablename__ = "user_challenge"
+    __tablename__ = "challenges_schema.user_challenge"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     # FK columns should store the scalar key values, not the related objects
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("app_user.id", ondelete="CASCADE"), nullable=False
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("public.users_auth.user_id", ondelete="CASCADE"),
+        nullable=False,
     )
     challenge_id: Mapped[int] = mapped_column(
         ForeignKey("challenge.id", ondelete="RESTRICT"), nullable=False

@@ -16,13 +16,15 @@ ALLOWED_REASON = ("verified_completion", "streak_bonus", "adjustment")
 
 
 class XpLedger(Base):
-    __tablename__ = "xp_ledger"
+    __tablename__ = "challenges_schema.xp_ledger"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     # FK columns should be scalar ids
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("app_user.id", ondelete="CASCADE"), nullable=False
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("public.users_auth.user_id", ondelete="CASCADE"),
+        nullable=False,
     )
 
     delta: Mapped[int] = mapped_column(Integer, nullable=False)

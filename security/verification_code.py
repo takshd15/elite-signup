@@ -37,7 +37,7 @@ def get_latest_code_for_user(db: Session, user_id: int) -> Optional[Verification
     row: Mapping[str, Any] | None = db.execute(
         text("""
             SELECT code, user_id, created_at, expiration_date, used, request_ip
-              FROM auth_code_table
+              FROM public.auth_code_table
              WHERE user_id = :uid
              ORDER BY created_at DESC
              LIMIT 1
