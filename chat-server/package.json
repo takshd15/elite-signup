@@ -1,0 +1,23 @@
+{
+  "name": "elitescore-chat-server",
+  "version": "1.0.0",
+  "description": "WebSocket chat server for EliteScore application",
+  "main": "production-server-no-redis.js",
+  "scripts": {
+    "start": "node production-server-no-redis.js",
+    "dev": "nodemon production-server-no-redis.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "winston": "^3.11.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
