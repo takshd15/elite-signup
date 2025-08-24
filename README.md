@@ -6,14 +6,6 @@ This branch contains the **production-ready chat system** that's fully integrate
 ## 📁 **Structure**
 ```
 elite-signup/
-├── src/                              # Java Backend Source Code
-│   └── main/java/com/example/elitescorebackend/
-│       ├── res/                      # REST endpoints
-│       ├── models/                   # Data models
-│       ├── handlers/                 # Business logic
-│       ├── util/                     # Utilities (JWT, DB)
-│       └── Main.java
-├── pom.xml                           # Java Backend Dependencies
 ├── chat-server/                      # Node.js Chat Server
 │   ├── production-server-no-redis.js    # Main chat server (1118 lines)
 │   ├── enhanced_chat_tables.sql         # Database schema
@@ -32,27 +24,14 @@ elite-signup/
 - **Purpose**: Authentication, user management, signup/login
 - **Status**: ✅ Deployed and working
 
-### **Java Backend (Local)**
-- **Location**: `src/` directory
-- **Purpose**: Source code for development and updates
-- **JWT Secret**: Same as deployed backend
-- **Database**: Same AWS RDS PostgreSQL
-
-### **Chat Server (Local)**
+### **Chat Server (This Branch)**
 - **Location**: `chat-server/` directory
 - **Purpose**: Real-time messaging system
 - **Integration**: Uses same JWT and database as Java backend
 
 ## 🚀 **Quick Start**
 
-### **1. Start Java Backend (if needed)**
-```bash
-# Build and run Java backend
-mvn clean install
-java -jar target/elitescore-backend-1.0.0.jar
-```
-
-### **2. Start Chat Server**
+### **1. Start Chat Server**
 ```bash
 cd chat-server
 npm install
@@ -60,7 +39,7 @@ node setup-enhanced-database.js
 node production-server-no-redis.js
 ```
 
-### **3. Test Integration**
+### **2. Test Features**
 ```bash
 cd chat-server
 node test-enhanced-features.js
