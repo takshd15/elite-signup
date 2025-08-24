@@ -1,3 +1,7 @@
+# _ **XP and Challenges Service**_
+
+
+
 # CV Rater (FastAPI · Heuristic, Heroku-friendly)
 
 A tiny web service that parses resumes (PDF/DOCX via **pyresparser**) and returns a **0–100** score with component breakdown and short explanations.  
