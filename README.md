@@ -9,7 +9,7 @@ Designed to run on **Heroku 512 MB** dynos without large ML dependencies (no Tor
 
 - Parsing: `pyresparser` (spaCy 2 + NLTK under the hood)  
 - Scoring: **heuristic rules** + large, editable **lexicon files** in `data/`  
-- API: **FastAPI** (`/health`, `/api/resume/score`)  
+- API: **FastAPI** (`v1/parser/health`, `v1/parser/resume/score`)  
 - Zero heavyweight downloads at runtime (uses **nltk.txt** + prebuilt spaCy wheel)
 
 ---
@@ -86,13 +86,13 @@ You usually don’t need any, but these are supported:
 
 ### Health
 ```
-GET /health
+GET /v1/parser/health
 ```
 Returns availability of NLTK resources + spaCy model.
 
 ### Score a resume
 ```
-POST /api/resume/score
+POST /v1/parser/resume/score
 Content-Type: multipart/form-data
 Form field: file=@<resume.pdf|docx>
 ```
@@ -224,7 +224,7 @@ You can tune everything by editing the text files under `data/`.
 - **NLTK “wordnet missing” at runtime**  
   - Keep `nltk.txt` in repo root (Heroku will bake corpora into the slug).  
   - Do **not** set `NLTK_DATA` to a path that doesn’t exist. If you set it on Heroku, use `/app/.heroku/python/nltk_data`.  
-  - `GET /health` shows exactly what’s missing.
+  - `GET v1/parser/health` shows exactly what’s missing.
 
 - **Python version conflicts**  
   spaCy 2.x requires ≤ Python 3.9. Use `.python-version` with `3.9`.
