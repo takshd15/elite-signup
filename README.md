@@ -6,7 +6,15 @@ This branch contains the **production-ready chat system** that's fully integrate
 ## 📁 **Structure**
 ```
 elite-signup/
-├── chat-server/                    # Node.js Chat Server
+├── src/                              # Java Backend Source Code
+│   └── main/java/com/example/elitescorebackend/
+│       ├── res/                      # REST endpoints
+│       ├── models/                   # Data models
+│       ├── handlers/                 # Business logic
+│       ├── util/                     # Utilities (JWT, DB)
+│       └── Main.java
+├── pom.xml                           # Java Backend Dependencies
+├── chat-server/                      # Node.js Chat Server
 │   ├── production-server-no-redis.js    # Main chat server (1118 lines)
 │   ├── enhanced_chat_tables.sql         # Database schema
 │   ├── setup-enhanced-database.js       # Database setup
@@ -17,26 +25,44 @@ elite-signup/
 └── .gitignore
 ```
 
+## 🔗 **Integration Architecture**
+
+### **Java Backend (Deployed)**
+- **URL**: `https://elite-score-backend.onrender.com`
+- **Purpose**: Authentication, user management, signup/login
+- **Status**: ✅ Deployed and working
+
+### **Java Backend (Local)**
+- **Location**: `src/` directory
+- **Purpose**: Source code for development and updates
+- **JWT Secret**: Same as deployed backend
+- **Database**: Same AWS RDS PostgreSQL
+
+### **Chat Server (Local)**
+- **Location**: `chat-server/` directory
+- **Purpose**: Real-time messaging system
+- **Integration**: Uses same JWT and database as Java backend
+
 ## 🚀 **Quick Start**
 
-### **1. Install Dependencies**
+### **1. Start Java Backend (if needed)**
+```bash
+# Build and run Java backend
+mvn clean install
+java -jar target/elitescore-backend-1.0.0.jar
+```
+
+### **2. Start Chat Server**
 ```bash
 cd chat-server
 npm install
-```
-
-### **2. Setup Database**
-```bash
 node setup-enhanced-database.js
-```
-
-### **3. Start Chat Server**
-```bash
 node production-server-no-redis.js
 ```
 
-### **4. Test Features**
+### **3. Test Integration**
 ```bash
+cd chat-server
 node test-enhanced-features.js
 ```
 
