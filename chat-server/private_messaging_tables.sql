@@ -13,6 +13,13 @@ CREATE TABLE IF NOT EXISTS private_messages (
     encryption_iv VARCHAR(255),
     is_encrypted BOOLEAN DEFAULT FALSE,
     is_read BOOLEAN DEFAULT FALSE,
+    reply_to VARCHAR(255),
+    -- New fields for message editing and deletion
+    is_edited BOOLEAN DEFAULT FALSE,
+    edited_at TIMESTAMP WITH TIME ZONE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    deleted_for_everyone BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -23,6 +30,10 @@ CREATE INDEX IF NOT EXISTS idx_private_messages_sender_id ON private_messages(se
 CREATE INDEX IF NOT EXISTS idx_private_messages_recipient_id ON private_messages(recipient_id);
 CREATE INDEX IF NOT EXISTS idx_private_messages_created_at ON private_messages(created_at);
 CREATE INDEX IF NOT EXISTS idx_private_messages_is_read ON private_messages(is_read);
+CREATE INDEX IF NOT EXISTS idx_private_messages_reply_to ON private_messages(reply_to);
+CREATE INDEX IF NOT EXISTS idx_private_messages_is_edited ON private_messages(is_edited);
+CREATE INDEX IF NOT EXISTS idx_private_messages_is_deleted ON private_messages(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_private_messages_deleted_for_everyone ON private_messages(deleted_for_everyone);
 
 -- Conversations table - tracks conversation metadata
 CREATE TABLE IF NOT EXISTS conversations (
@@ -54,6 +65,34 @@ CREATE TABLE IF NOT EXISTS user_status (
 CREATE INDEX IF NOT EXISTS idx_user_status_is_online ON user_status(is_online);
 CREATE INDEX IF NOT EXISTS idx_user_status_last_seen ON user_status(last_seen);
 
+-- Message reactions table - stores reactions to messages
+CREATE TABLE IF NOT EXISTS message_reactions (
+    id SERIAL PRIMARY KEY,
+    message_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    reaction VARCHAR(50) NOT NULL, -- emoji or short text
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(message_id, user_id, reaction)
+);
+
+-- Create indexes for message reactions
+CREATE INDEX IF NOT EXISTS idx_message_reactions_message_id ON message_reactions(message_id);
+CREATE INDEX IF NOT EXISTS idx_message_reactions_user_id ON message_reactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_message_reactions_reaction ON message_reactions(reaction);
+
+-- Individual message deletions table - tracks when users delete messages for themselves only
+CREATE TABLE IF NOT EXISTS message_deletions (
+    id SERIAL PRIMARY KEY,
+    message_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(message_id, user_id)
+);
+
+-- Create indexes for message deletions
+CREATE INDEX IF NOT EXISTS idx_message_deletions_message_id ON message_deletions(message_id);
+CREATE INDEX IF NOT EXISTS idx_message_deletions_user_id ON message_deletions(user_id);
+
 -- Create trigger for updated_at columns
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -76,6 +115,17 @@ CREATE TRIGGER update_conversations_updated_at
 
 CREATE TRIGGER update_user_status_updated_at 
     BEFORE UPDATE ON user_status 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Apply triggers to new tables
+CREATE TRIGGER update_message_reactions_updated_at 
+    BEFORE UPDATE ON message_reactions 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_message_deletions_updated_at 
+    BEFORE UPDATE ON message_deletions 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 

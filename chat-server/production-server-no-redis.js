@@ -133,19 +133,26 @@ class InputValidator {
       field = 'recipientId';
     }
     
-    // Check for harmful content
+    // Check for harmful content - improved XSS detection
     const harmfulPatterns = [
       { pattern: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, name: 'script tags' },
       { pattern: /javascript:/gi, name: 'javascript protocol' },
       { pattern: /on\w+\s*=/gi, name: 'event handlers' },
-      { pattern: /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, name: 'iframe tags' }
+      { pattern: /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, name: 'iframe tags' },
+      { pattern: /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, name: 'object tags' },
+      { pattern: /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, name: 'embed tags' },
+      { pattern: /<link\b[^<]*(?:(?!<\/link>)<[^<]*)*<\/link>/gi, name: 'link tags' },
+      { pattern: /<meta\b[^<]*(?:(?!<\/meta>)<[^<]*)*<\/meta>/gi, name: 'meta tags' }
     ];
     
-    for (const { pattern, name } of harmfulPatterns) {
-      if (pattern.test(message.content)) {
-        errors.push(`Message contains potentially harmful content: ${name}`);
-        field = 'content';
-        break;
+    // Check for harmful patterns if content contains HTML-like content or suspicious patterns
+    if (/[<>]/.test(message.content) || /script|javascript|on\w+\s*=|iframe|object|embed/i.test(message.content)) {
+      for (const { pattern, name } of harmfulPatterns) {
+        if (pattern.test(message.content)) {
+          errors.push(`Message contains potentially harmful content: ${name}`);
+          field = 'content';
+          break;
+        }
       }
     }
     
@@ -392,9 +399,9 @@ function decryptMessage(encryptedData, iv) {
 // Content moderation configuration
 const BANNED_WORDS = new Set(['spam', 'scam', 'hack', 'crack', 'illegal', 'drugs', 'weapons']);
 const SPAM_PATTERNS = [
-  /(.)\1{10,}/, // Repeated characters (more lenient for testing)
-  /(https?:\/\/[^\s]+){2,}/, // Multiple URLs
-  /(buy|sell|discount|offer|free|money|cash|bitcoin|eth|crypto){3,}/i, // Spam keywords
+  /(.)\1{20,}/, // Repeated characters (more lenient - 20+ repetitions)
+  /(https?:\/\/[^\s]+){3,}/, // Multiple URLs (3+ URLs)
+  /(buy|sell|discount|offer|free|money|cash|bitcoin|eth|crypto){4,}/i, // Spam keywords (4+ occurrences)
 ];
 const CAPS_THRESHOLD = 0.7; // 70% caps is shouting
 
@@ -674,29 +681,30 @@ async function savePrivateMessageToDatabase(message) {
     // Encrypt the message content
     const encryptionResult = encryptMessage(message.content);
     
-    if (encryptionResult) {
-      await dbPool.query(`
-        INSERT INTO private_messages (message_id, conversation_id, sender_id, recipient_id, content, encrypted_content, encryption_iv, is_encrypted, is_read)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [
-        message.id, 
-        message.conversationId, 
-        message.senderId, 
-        message.recipientId, 
-        message.content, // Keep original for fallback
-        encryptionResult.encrypted,
-        encryptionResult.iv,
-        true, // is_encrypted
-        false // is_read
-      ]);
+         if (encryptionResult) {
+       await dbPool.query(`
+         INSERT INTO private_messages (message_id, conversation_id, sender_id, recipient_id, content, encrypted_content, encryption_iv, is_encrypted, is_read, reply_to)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       `, [
+         message.id, 
+         message.conversationId, 
+         message.senderId, 
+         message.recipientId, 
+         message.content, // Keep original for fallback
+         encryptionResult.encrypted,
+         encryptionResult.iv,
+         true, // is_encrypted
+         false, // is_read
+         message.replyTo || null // reply_to field
+       ]);
       
       logger.info(`Encrypted private message saved to database: ${message.id}`);
-    } else {
-      // Fallback to unencrypted if encryption fails
-      await dbPool.query(`
-        INSERT INTO private_messages (message_id, conversation_id, sender_id, recipient_id, content, is_encrypted, is_read)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `, [message.id, message.conversationId, message.senderId, message.recipientId, message.content, false, false]);
+         } else {
+       // Fallback to unencrypted if encryption fails
+       await dbPool.query(`
+         INSERT INTO private_messages (message_id, conversation_id, sender_id, recipient_id, content, is_encrypted, is_read, reply_to)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       `, [message.id, message.conversationId, message.senderId, message.recipientId, message.content, false, false, message.replyTo || null]);
       
       logger.warn(`Unencrypted private message saved to database (encryption failed): ${message.id}`);
     }
@@ -713,26 +721,27 @@ async function loadPrivateMessagesFromDatabase(conversationId, limit = 50) {
   }
 
   try {
-    const result = await dbPool.query(`
-      SELECT 
-        pm.message_id as id, 
-        pm.conversation_id as "conversationId", 
-        pm.sender_id as "senderId", 
-        pm.recipient_id as "recipientId", 
-        COALESCE(ua.username, cu.username, pm.sender_id) as username,
-        pm.content,
-        pm.encrypted_content,
-        pm.encryption_iv,
-        pm.is_encrypted,
-        pm.is_read as "isRead",
-        pm.created_at as "timestamp"
-      FROM private_messages pm
-      LEFT JOIN users_auth ua ON pm.sender_id = ua.user_id::VARCHAR
-      LEFT JOIN chat_users cu ON pm.sender_id = cu.user_id
-      WHERE pm.conversation_id = $1 
-      ORDER BY pm.created_at DESC 
-      LIMIT $2
-    `, [conversationId, limit]);
+         const result = await dbPool.query(`
+       SELECT 
+         pm.message_id as id, 
+         pm.conversation_id as "conversationId", 
+         pm.sender_id as "senderId", 
+         pm.recipient_id as "recipientId", 
+         COALESCE(ua.username, cu.username, pm.sender_id) as username,
+         pm.content,
+         pm.encrypted_content,
+         pm.encryption_iv,
+         pm.is_encrypted,
+         pm.is_read as "isRead",
+         pm.reply_to as "replyTo",
+         pm.created_at as "timestamp"
+       FROM private_messages pm
+       LEFT JOIN users_auth ua ON pm.sender_id = ua.user_id::VARCHAR
+       LEFT JOIN chat_users cu ON pm.sender_id = cu.user_id
+       WHERE pm.conversation_id = $1 
+       ORDER BY pm.created_at DESC 
+       LIMIT $2
+     `, [conversationId, limit]);
     
     // Convert to message format and reverse to get chronological order
     const messages = result.rows.reverse().map(row => {
@@ -748,16 +757,17 @@ async function loadPrivateMessagesFromDatabase(conversationId, limit = 50) {
         }
       }
       
-      return {
-        id: row.id,
-        conversationId: row.conversationId,
-        senderId: row.senderId,
-        recipientId: row.recipientId,
-        username: row.username,
-        content: content,
-        timestamp: row.timestamp,
-        isRead: row.isRead || false
-      };
+             return {
+         id: row.id,
+         conversationId: row.conversationId,
+         senderId: row.senderId,
+         recipientId: row.recipientId,
+         username: row.username,
+         content: content,
+         timestamp: row.timestamp,
+         isRead: row.isRead || false,
+         replyTo: row.replyTo || null
+       };
     });
     
     logger.info(`Loaded ${messages.length} private messages from database for conversation: ${conversationId}`);
@@ -1064,19 +1074,22 @@ wss.on('connection', (ws, req) => {
         message.content = validation.sanitizedContent;
       }
       
-      // Check message rate limiting for authenticated users
-      if (client && client.user) {
-        if (!rateLimiter.checkMessageRateLimit(client.user.userId, MESSAGE_RATE_LIMIT)) {
-          metrics.rateLimitHits = (metrics.rateLimitHits || 0) + 1;
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: 'Rate limit exceeded',
-            details: 'You are sending messages too quickly. Please wait a moment before sending another message.',
-            retryAfter: 30
-          }));
-          return;
-        }
-      }
+        // Check message rate limiting for authenticated users (more lenient for large messages)
+  if (client && client.user) {
+    const messageLength = message.content ? message.content.length : 0;
+    const rateLimitThreshold = messageLength > 500 ? MESSAGE_RATE_LIMIT * 2 : MESSAGE_RATE_LIMIT;
+    
+    if (!rateLimiter.checkMessageRateLimit(client.user.userId, rateLimitThreshold)) {
+      metrics.rateLimitHits = (metrics.rateLimitHits || 0) + 1;
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Rate limit exceeded',
+        details: 'You are sending messages too quickly. Please wait a moment before sending another message.',
+        retryAfter: 30
+      }));
+      return;
+    }
+  }
       
       await handleMessage(ws, message, clientId);
       
@@ -1170,6 +1183,26 @@ async function handleMessage(ws, message, clientId) {
       
     case 'mark_message_read':
       await handleMarkMessageRead(ws, data, clientId);
+      break;
+      
+    case 'edit_message':
+      await handleEditMessage(ws, data, clientId);
+      break;
+      
+    case 'delete_message':
+      await handleDeleteMessage(ws, data, clientId);
+      break;
+      
+    case 'add_reaction':
+      await handleAddReaction(ws, data, clientId);
+      break;
+      
+    case 'remove_reaction':
+      await handleRemoveReaction(ws, data, clientId);
+      break;
+      
+    case 'initialize_chat':
+      await handleInitializeChat(ws, data, clientId);
       break;
       
     case 'typing':
@@ -1409,7 +1442,7 @@ async function handleSendPrivateMessage(ws, data, clientId) {
     return;
   }
   
-  const { recipientId, content, conversationId } = data;
+  const { recipientId, content, conversationId, replyTo } = data;
   
   if (!content || !recipientId) {
     const missingFields = [];
@@ -1460,7 +1493,8 @@ async function handleSendPrivateMessage(ws, data, clientId) {
     username: client.user.username,
     content: content,
     timestamp: new Date().toISOString(),
-    isRead: false
+    isRead: false,
+    replyTo: replyTo || null
   };
   
   // Store message in conversation (in-memory for real-time)
@@ -1480,19 +1514,27 @@ async function handleSendPrivateMessage(ws, data, clientId) {
   ws.send(JSON.stringify({
     type: 'private_message_sent',
     message: message,
+    messageId: msgId,
+    conversationId: convId,
+    replyTo: replyTo || null,
     timestamp: new Date().toISOString()
   }));
   
-  // Send to recipient if online
+  // Send to recipient if online (with delay to avoid race conditions)
   const recipientClientId = userConnections.get(recipientId);
   if (recipientClientId) {
     const recipientClient = clients.get(recipientClientId);
     if (recipientClient && recipientClient.ws.readyState === WebSocket.OPEN) {
-      recipientClient.ws.send(JSON.stringify({
-        type: 'new_private_message',
-        message: message,
-        timestamp: new Date().toISOString()
-      }));
+      // Use setTimeout to avoid race conditions with mark as read
+      setTimeout(() => {
+        if (recipientClient.ws.readyState === WebSocket.OPEN) {
+          recipientClient.ws.send(JSON.stringify({
+            type: 'new_private_message',
+            message: message,
+            timestamp: new Date().toISOString()
+          }));
+        }
+      }, 100);
     }
   }
   
@@ -1512,16 +1554,55 @@ async function handleMarkMessageRead(ws, data, clientId) {
   
   const { messageId, conversationId } = data;
   
-  if (!messageId || !conversationId) {
-    const missingFields = [];
-    if (!messageId) missingFields.push('messageId');
-    if (!conversationId) missingFields.push('conversationId');
-    
+  if (!messageId) {
     ws.send(JSON.stringify({
       type: 'error',
       message: 'Missing required fields',
-      details: `The following fields are required but missing: ${missingFields.join(', ')}`,
-      field: missingFields[0] || 'general'
+      details: 'Message ID is required to mark a message as read.',
+      field: 'messageId'
+    }));
+    return;
+  }
+  
+  // If conversationId is not provided, try to find it from the message
+  let actualConversationId = conversationId;
+  let foundMessage = null;
+  
+  if (!actualConversationId) {
+    // Try to find the conversation by searching through all conversations
+    for (const [convId, conversation] of conversations.entries()) {
+      const message = conversation.messages.find(m => m.id === messageId);
+      if (message) {
+        actualConversationId = convId;
+        foundMessage = message;
+        break;
+      }
+    }
+  } else {
+    // If conversationId is provided, find the message in that conversation
+    const conversation = conversations.get(actualConversationId);
+    if (conversation) {
+      foundMessage = conversation.messages.find(m => m.id === messageId);
+    }
+  }
+  
+  if (!actualConversationId || !foundMessage) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message not found',
+      details: 'Could not find the message or its conversation.',
+      field: 'messageId'
+    }));
+    return;
+  }
+  
+  // Verify the user is the recipient of this message
+  if (foundMessage.recipientId !== client.user.userId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Permission denied',
+      details: 'You can only mark messages sent to you as read.',
+      field: 'messageId'
     }));
     return;
   }
@@ -1529,7 +1610,7 @@ async function handleMarkMessageRead(ws, data, clientId) {
   // Mark message as read in database
   if (dbConnected) {
     try {
-      await dbClient.query(`
+      await dbPool.query(`
         UPDATE private_messages 
         SET is_read = true 
         WHERE message_id = $1 AND recipient_id = $2
@@ -1541,16 +1622,19 @@ async function handleMarkMessageRead(ws, data, clientId) {
     }
   }
   
+  // Mark message as read in memory
+  foundMessage.isRead = true;
+  
   // Send confirmation to the user who marked the message as read
   ws.send(JSON.stringify({
     type: 'message_marked_read',
     messageId: messageId,
-    conversationId: conversationId,
+    conversationId: actualConversationId,
     timestamp: new Date().toISOString()
   }));
   
   // Notify sender that message was read
-  const conversation = conversations.get(conversationId);
+  const conversation = conversations.get(actualConversationId);
   if (conversation) {
     const message = conversation.messages.find(m => m.id === messageId);
     if (message && message.senderId !== client.user.userId) {
@@ -1624,6 +1708,597 @@ async function handleTyping(ws, data, clientId) {
     isTyping: isTyping,
     timestamp: new Date().toISOString()
   }));
+}
+
+// ============================================================================
+// NEW FEATURES: Message Editing, Deletion, Reactions, and Chat Initialization
+// ============================================================================
+
+async function handleEditMessage(ws, data, clientId) {
+  const client = clients.get(clientId);
+  if (!client || !client.user) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Authentication required',
+      details: 'You must be authenticated to edit messages.'
+    }));
+    return;
+  }
+  
+  const { messageId, newContent, conversationId } = data;
+  
+  if (!messageId || !newContent) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Missing required fields',
+      details: 'Message ID and new content are required to edit a message.'
+    }));
+    return;
+  }
+  
+  // Validate content length
+  if (newContent.length > 1000) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message too long',
+      details: 'Message content cannot exceed 1000 characters.'
+    }));
+    return;
+  }
+  
+  // Find the message in memory
+  let actualConversationId = conversationId;
+  let message = null;
+  
+  if (!actualConversationId) {
+    // Search through all conversations
+    for (const [convId, conversation] of conversations.entries()) {
+      message = conversation.messages.find(m => m.id === messageId);
+      if (message) {
+        actualConversationId = convId;
+        break;
+      }
+    }
+  } else {
+    const conversation = conversations.get(actualConversationId);
+    if (conversation) {
+      message = conversation.messages.find(m => m.id === messageId);
+    }
+  }
+  
+  if (!message) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message not found',
+      details: 'Could not find the message to edit.'
+    }));
+    return;
+  }
+  
+  // Check if user owns the message
+  if (message.senderId !== client.user.userId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Permission denied',
+      details: 'You can only edit your own messages.'
+    }));
+    return;
+  }
+  
+  // Check if message is too old to edit (5 minutes)
+  const messageAge = Date.now() - new Date(message.timestamp).getTime();
+  if (messageAge > 5 * 60 * 1000) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message too old',
+      details: 'Messages can only be edited within 5 minutes of sending.'
+    }));
+    return;
+  }
+  
+  // Update message in memory
+  message.content = newContent;
+  message.editedAt = new Date().toISOString();
+  message.isEdited = true;
+  
+  // Update message in database
+  if (dbConnected) {
+    try {
+      await dbPool.query(`
+        UPDATE private_messages 
+        SET content = $1, edited_at = NOW(), is_edited = true
+        WHERE message_id = $2 AND sender_id = $3
+      `, [newContent, messageId, client.user.userId]);
+      
+      logger.info(`Message ${messageId} edited by ${client.user.username}`);
+    } catch (error) {
+      logger.error('Error editing message in database:', error);
+    }
+  }
+  
+  // Send confirmation to sender
+  ws.send(JSON.stringify({
+    type: 'message_edited',
+    messageId: messageId,
+    conversationId: actualConversationId,
+    newContent: newContent,
+    editedAt: message.editedAt,
+    timestamp: new Date().toISOString()
+  }));
+  
+  // Notify recipient about the edit
+  const recipientClientId = userConnections.get(message.recipientId);
+  if (recipientClientId) {
+    const recipientClient = clients.get(recipientClientId);
+    if (recipientClient && recipientClient.ws.readyState === WebSocket.OPEN) {
+      recipientClient.ws.send(JSON.stringify({
+        type: 'message_edited',
+        messageId: messageId,
+        conversationId: actualConversationId,
+        newContent: newContent,
+        editedAt: message.editedAt,
+        timestamp: new Date().toISOString()
+      }));
+    }
+  }
+}
+
+async function handleDeleteMessage(ws, data, clientId) {
+  const client = clients.get(clientId);
+  if (!client || !client.user) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Authentication required',
+      details: 'You must be authenticated to delete messages.'
+    }));
+    return;
+  }
+  
+  const { messageId, conversationId, deleteForEveryone = false } = data;
+  
+  if (!messageId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Missing message ID',
+      details: 'Message ID is required to delete a message.'
+    }));
+    return;
+  }
+  
+  // Find the message
+  let actualConversationId = conversationId;
+  let message = null;
+  
+  if (!actualConversationId) {
+    for (const [convId, conversation] of conversations.entries()) {
+      message = conversation.messages.find(m => m.id === messageId);
+      if (message) {
+        actualConversationId = convId;
+        break;
+      }
+    }
+  } else {
+    const conversation = conversations.get(actualConversationId);
+    if (conversation) {
+      message = conversation.messages.find(m => m.id === messageId);
+    }
+  }
+  
+  if (!message) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message not found',
+      details: 'Could not find the message to delete.'
+    }));
+    return;
+  }
+  
+  // Check permissions
+  if (deleteForEveryone && message.senderId !== client.user.userId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Permission denied',
+      details: 'Only the message sender can delete for everyone.'
+    }));
+    return;
+  }
+  
+  // Check time limit for delete for everyone (1 hour)
+  if (deleteForEveryone) {
+    const messageAge = Date.now() - new Date(message.timestamp).getTime();
+    if (messageAge > 60 * 60 * 1000) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Message too old',
+        details: 'Messages can only be deleted for everyone within 1 hour of sending.'
+      }));
+      return;
+    }
+  }
+  
+  // Mark message as deleted in memory
+  if (deleteForEveryone) {
+    message.isDeleted = true;
+    message.deletedAt = new Date().toISOString();
+    message.deletedForEveryone = true;
+  } else {
+    message.isDeletedForMe = true;
+    message.deletedAt = new Date().toISOString();
+  }
+  
+  // Update database
+  if (dbConnected) {
+    try {
+      if (deleteForEveryone) {
+        await dbPool.query(`
+          UPDATE private_messages 
+          SET is_deleted = true, deleted_at = NOW(), deleted_for_everyone = true
+          WHERE message_id = $1
+        `, [messageId]);
+      } else {
+        // For individual deletion, we'll track this in a separate table
+        await dbPool.query(`
+          INSERT INTO message_deletions (message_id, user_id, deleted_at)
+          VALUES ($1, $2, NOW())
+          ON CONFLICT (message_id, user_id) DO NOTHING
+        `, [messageId, client.user.userId]);
+      }
+      
+      logger.info(`Message ${messageId} ${deleteForEveryone ? 'deleted for everyone' : 'deleted for user'} by ${client.user.username}`);
+    } catch (error) {
+      logger.error('Error deleting message in database:', error);
+    }
+  }
+  
+  // Send confirmation to sender
+  ws.send(JSON.stringify({
+    type: 'message_deleted',
+    messageId: messageId,
+    conversationId: actualConversationId,
+    deleteForEveryone: deleteForEveryone,
+    timestamp: new Date().toISOString()
+  }));
+  
+  // Notify recipient if deleted for everyone
+  if (deleteForEveryone) {
+    const recipientClientId = userConnections.get(message.recipientId);
+    if (recipientClientId) {
+      const recipientClient = clients.get(recipientClientId);
+      if (recipientClient && recipientClient.ws.readyState === WebSocket.OPEN) {
+        recipientClient.ws.send(JSON.stringify({
+          type: 'message_deleted',
+          messageId: messageId,
+          conversationId: actualConversationId,
+          deleteForEveryone: true,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    }
+  }
+}
+
+async function handleAddReaction(ws, data, clientId) {
+  const client = clients.get(clientId);
+  if (!client || !client.user) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Authentication required',
+      details: 'You must be authenticated to add reactions.'
+    }));
+    return;
+  }
+  
+  const { messageId, reaction, conversationId } = data;
+  
+  if (!messageId || !reaction) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Missing required fields',
+      details: 'Message ID and reaction are required.'
+    }));
+    return;
+  }
+  
+  // Validate reaction (emoji or short text)
+  if (reaction.length > 10) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Invalid reaction',
+      details: 'Reaction must be 10 characters or less.'
+    }));
+    return;
+  }
+  
+  // Find the message
+  let actualConversationId = conversationId;
+  let message = null;
+  
+  if (!actualConversationId) {
+    for (const [convId, conversation] of conversations.entries()) {
+      message = conversation.messages.find(m => m.id === messageId);
+      if (message) {
+        actualConversationId = convId;
+        break;
+      }
+    }
+  } else {
+    const conversation = conversations.get(actualConversationId);
+    if (conversation) {
+      message = conversation.messages.find(m => m.id === messageId);
+    }
+  }
+  
+  if (!message) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Message not found',
+      details: 'Could not find the message to react to.'
+    }));
+    return;
+  }
+  
+  // Initialize reactions if not exists
+  if (!message.reactions) {
+    message.reactions = [];
+  }
+  
+  // Check if user already reacted with this emoji
+  const existingReaction = message.reactions.find(r => 
+    r.userId === client.user.userId && r.reaction === reaction
+  );
+  
+  if (existingReaction) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Reaction already exists',
+      details: 'You have already reacted with this emoji.'
+    }));
+    return;
+  }
+  
+  // Add reaction
+  const newReaction = {
+    userId: client.user.userId,
+    username: client.user.username,
+    reaction: reaction,
+    timestamp: new Date().toISOString()
+  };
+  
+  message.reactions.push(newReaction);
+  
+  // Save to database
+  if (dbConnected) {
+    try {
+      await dbPool.query(`
+        INSERT INTO message_reactions (message_id, user_id, reaction, created_at)
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (message_id, user_id, reaction) DO NOTHING
+      `, [messageId, client.user.userId, reaction]);
+      
+      logger.info(`Reaction ${reaction} added to message ${messageId} by ${client.user.username}`);
+    } catch (error) {
+      logger.error('Error adding reaction to database:', error);
+    }
+  }
+  
+  // Send confirmation to sender
+  ws.send(JSON.stringify({
+    type: 'reaction_added',
+    messageId: messageId,
+    conversationId: actualConversationId,
+    reaction: newReaction,
+    timestamp: new Date().toISOString()
+  }));
+  
+  // Notify message sender about the reaction
+  if (message.senderId !== client.user.userId) {
+    const senderClientId = userConnections.get(message.senderId);
+    if (senderClientId) {
+      const senderClient = clients.get(senderClientId);
+      if (senderClient && senderClient.ws.readyState === WebSocket.OPEN) {
+        senderClient.ws.send(JSON.stringify({
+          type: 'reaction_added',
+          messageId: messageId,
+          conversationId: actualConversationId,
+          reaction: newReaction,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    }
+  }
+}
+
+async function handleRemoveReaction(ws, data, clientId) {
+  const client = clients.get(clientId);
+  if (!client || !client.user) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Authentication required',
+      details: 'You must be authenticated to remove reactions.'
+    }));
+    return;
+  }
+  
+  const { messageId, reaction, conversationId } = data;
+  
+  if (!messageId || !reaction) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Missing required fields',
+      details: 'Message ID and reaction are required.'
+    }));
+    return;
+  }
+  
+  // Find the message
+  let actualConversationId = conversationId;
+  let message = null;
+  
+  if (!actualConversationId) {
+    for (const [convId, conversation] of conversations.entries()) {
+      message = conversation.messages.find(m => m.id === messageId);
+      if (message) {
+        actualConversationId = convId;
+        break;
+      }
+    }
+  } else {
+    const conversation = conversations.get(actualConversationId);
+    if (conversation) {
+      message = conversation.messages.find(m => m.id === messageId);
+    }
+  }
+  
+  if (!message || !message.reactions) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Reaction not found',
+      details: 'Could not find the reaction to remove.'
+    }));
+    return;
+  }
+  
+  // Find and remove the reaction
+  const reactionIndex = message.reactions.findIndex(r => 
+    r.userId === client.user.userId && r.reaction === reaction
+  );
+  
+  if (reactionIndex === -1) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Reaction not found',
+      details: 'You have not reacted with this emoji.'
+    }));
+    return;
+  }
+  
+  const removedReaction = message.reactions.splice(reactionIndex, 1)[0];
+  
+  // Remove from database
+  if (dbConnected) {
+    try {
+      await dbPool.query(`
+        DELETE FROM message_reactions 
+        WHERE message_id = $1 AND user_id = $2 AND reaction = $3
+      `, [messageId, client.user.userId, reaction]);
+      
+      logger.info(`Reaction ${reaction} removed from message ${messageId} by ${client.user.username}`);
+    } catch (error) {
+      logger.error('Error removing reaction from database:', error);
+    }
+  }
+  
+  // Send confirmation to sender
+  ws.send(JSON.stringify({
+    type: 'reaction_removed',
+    messageId: messageId,
+    conversationId: actualConversationId,
+    reaction: removedReaction,
+    timestamp: new Date().toISOString()
+  }));
+  
+  // Notify message sender about the reaction removal
+  if (message.senderId !== client.user.userId) {
+    const senderClientId = userConnections.get(message.senderId);
+    if (senderClientId) {
+      const senderClient = clients.get(senderClientId);
+      if (senderClient && senderClient.ws.readyState === WebSocket.OPEN) {
+        senderClient.ws.send(JSON.stringify({
+          type: 'reaction_removed',
+          messageId: messageId,
+          conversationId: actualConversationId,
+          reaction: removedReaction,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    }
+  }
+}
+
+async function handleInitializeChat(ws, data, clientId) {
+  const client = clients.get(clientId);
+  if (!client || !client.user) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Authentication required',
+      details: 'You must be authenticated to initialize a chat.'
+    }));
+    return;
+  }
+  
+  const { recipientId } = data;
+  
+  if (!recipientId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Missing recipient ID',
+      details: 'Recipient ID is required to initialize a chat.'
+    }));
+    return;
+  }
+  
+  // Validate recipient ID
+  if (recipientId === client.user.userId) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Invalid recipient',
+      details: 'You cannot start a chat with yourself.'
+    }));
+    return;
+  }
+  
+  // Generate unique conversation ID
+  const conversationId = crypto.randomUUID();
+  
+  // Create new conversation
+  const conversation = {
+    id: conversationId,
+    participants: [client.user.userId, recipientId],
+    messages: [],
+    createdAt: new Date().toISOString(),
+    lastActivity: new Date().toISOString()
+  };
+  
+  // Store conversation in memory
+  conversations.set(conversationId, conversation);
+  
+  // Store conversation in database
+  if (dbConnected) {
+    try {
+      await dbPool.query(`
+        INSERT INTO conversations (conversation_id, participant1_id, participant2_id, created_at, last_activity)
+        VALUES ($1, $2, $3, NOW(), NOW())
+        ON CONFLICT (conversation_id) DO NOTHING
+      `, [conversationId, client.user.userId, recipientId]);
+      
+      logger.info(`New chat initialized between ${client.user.username} and user ${recipientId}`);
+    } catch (error) {
+      logger.error('Error initializing chat in database:', error);
+    }
+  }
+  
+  // Send confirmation to sender
+  ws.send(JSON.stringify({
+    type: 'chat_initialized',
+    conversationId: conversationId,
+    recipientId: recipientId,
+    timestamp: new Date().toISOString()
+  }));
+  
+  // Notify recipient if online
+  const recipientClientId = userConnections.get(recipientId);
+  if (recipientClientId) {
+    const recipientClient = clients.get(recipientClientId);
+    if (recipientClient && recipientClient.ws.readyState === WebSocket.OPEN) {
+      recipientClient.ws.send(JSON.stringify({
+        type: 'new_chat_initialized',
+        conversationId: conversationId,
+        initiatorId: client.user.userId,
+        initiatorUsername: client.user.username,
+        timestamp: new Date().toISOString()
+      }));
+    }
+  }
 }
 
 function broadcastToAll(message, excludeClientId = null) {

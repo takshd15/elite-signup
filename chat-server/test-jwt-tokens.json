@@ -1,0 +1,40 @@
+{
+  "valid_tokens": [
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMSIsImp0aSI6InRlc3Qtand0LTEyMyIsImlhdCI6MTc1NjE1ODEyNywiZXhwIjoxNzU2MTYxNzI3fQ.1hNmygv-CTPquJpk6edQayfEwaRMtzJYcKMSWHoB1yo",
+      "user": {
+        "userId": 1,
+        "username": "user1",
+        "name": "Test User 1"
+      },
+      "jti": "test-jwt-123"
+    },
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMiIsImp0aSI6InRlc3Qtand0LTQ1NiIsImlhdCI6MTc1NjE1ODEyNywiZXhwIjoxNzU2MTYxNzI3fQ.84NAI7fpfWY4_TfCEt1h6MXvsaZRlhQ5ASu8FLQmrZE",
+      "user": {
+        "userId": 2,
+        "username": "user2",
+        "name": "Test User 2"
+      },
+      "jti": "test-jwt-456"
+    },
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMyIsImp0aSI6InRlc3Qtand0LTc4OSIsImlhdCI6MTc1NjE1ODEyNywiZXhwIjoxNzU2MTYxNzI3fQ.9FHfjlR_6xKlSwGA44VnOa__5sx6RKzgex77LAybRGI",
+      "user": {
+        "userId": 3,
+        "username": "user3",
+        "name": "Test User 3"
+      },
+      "jti": "test-jwt-789"
+    }
+  ],
+  "revoked_token": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyNCIsImp0aSI6InJldm9rZWQtdG9rZW4iLCJpYXQiOjE3NTYxNTgxMjcsImV4cCI6MTc1NjE2MTcyN30.crzIXJgZuf6HZxlDe4Yz-vjjXJ_hhwNl8Ye8xZHCMzw",
+    "user": {
+      "userId": 4,
+      "username": "revoked_user",
+      "name": "Revoked User"
+    },
+    "jti": "revoked-token"
+  }
+}

@@ -567,8 +567,8 @@ async function testTypingAndReadReceipts() {
         // Mark as read
         const readResponse = await sendMessage(bobWs, {
           type: 'mark_message_read',
-          messageId: msgResponse.message.id,
-          conversationId: msgResponse.message.conversationId
+          messageId: msgResponse.messageId,
+          conversationId: msgResponse.conversationId
         });
         
         if (readResponse.type === 'message_marked_read') {
