@@ -9,13 +9,16 @@ CREATE TABLE IF NOT EXISTS chat_channels (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Enhanced Chat Messages Table with editing support
+-- Enhanced Chat Messages Table with editing support and encryption
 CREATE TABLE IF NOT EXISTS chat_messages (
     id SERIAL PRIMARY KEY,
     message_id UUID UNIQUE NOT NULL,
     channel_id VARCHAR(50) NOT NULL REFERENCES chat_channels(channel_id) ON DELETE CASCADE,
     user_id VARCHAR(50) NOT NULL,
     content TEXT NOT NULL,
+    encrypted_content TEXT,
+    encryption_iv VARCHAR(32),
+    is_encrypted BOOLEAN DEFAULT FALSE,
     thread_id UUID,
     reply_to UUID,
     is_edited BOOLEAN DEFAULT FALSE,

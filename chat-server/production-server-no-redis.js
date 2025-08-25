@@ -70,6 +70,43 @@ const logger = winston.createLogger({
 const JWT_SECRET = '12341234123412341234123412341234123412341234'; // Same as Java backend
 const CHAT_ENCRYPTION_KEY = 'super-secure-aes-encryption-key-32';
 
+// Encryption functions
+function encryptMessage(content) {
+  try {
+    const algorithm = 'aes-256-cbc';
+    const key = crypto.scryptSync(CHAT_ENCRYPTION_KEY, 'salt', 32);
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    
+    let encrypted = cipher.update(content, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    return {
+      encrypted: encrypted,
+      iv: iv.toString('hex')
+    };
+  } catch (error) {
+    console.error('Encryption error:', error);
+    return null;
+  }
+}
+
+function decryptMessage(encryptedData, iv) {
+  try {
+    const algorithm = 'aes-256-cbc';
+    const key = crypto.scryptSync(CHAT_ENCRYPTION_KEY, 'salt', 32);
+    const decipher = crypto.createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
+    
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption error:', error);
+    return null;
+  }
+}
+
 // Content moderation configuration
 const BANNED_WORDS = new Set(['spam', 'scam', 'hack', 'crack', 'illegal', 'drugs', 'weapons']);
 const SPAM_PATTERNS = [
@@ -268,7 +305,7 @@ async function getUserDetails(userId) {
   }
 }
 
-// Save message to database
+// Save message to database with encryption
 async function saveMessageToDatabase(message) {
   if (!dbConnected) {
     logger.warn('Database not connected, message not saved');
@@ -276,18 +313,41 @@ async function saveMessageToDatabase(message) {
   }
 
   try {
-    await dbClient.query(`
-      INSERT INTO chat_messages (message_id, channel_id, user_id, content, thread_id, reply_to)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [message.id, message.channelId, message.userId, message.content, message.threadId, message.replyTo]);
+    // Encrypt the message content
+    const encryptionResult = encryptMessage(message.content);
     
-    logger.info(`Message saved to database: ${message.id}`);
+    if (encryptionResult) {
+      await dbClient.query(`
+        INSERT INTO chat_messages (message_id, channel_id, user_id, content, encrypted_content, encryption_iv, is_encrypted, thread_id, reply_to)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [
+        message.id, 
+        message.channelId, 
+        message.userId, 
+        message.content, // Keep original for fallback
+        encryptionResult.encrypted,
+        encryptionResult.iv,
+        true, // is_encrypted
+        message.threadId, 
+        message.replyTo
+      ]);
+      
+      logger.info(`Encrypted message saved to database: ${message.id}`);
+    } else {
+      // Fallback to unencrypted if encryption fails
+      await dbClient.query(`
+        INSERT INTO chat_messages (message_id, channel_id, user_id, content, is_encrypted, thread_id, reply_to)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [message.id, message.channelId, message.userId, message.content, false, message.threadId, message.replyTo]);
+      
+      logger.warn(`Unencrypted message saved to database (encryption failed): ${message.id}`);
+    }
   } catch (error) {
     logger.error('Error saving message to database:', error);
   }
 }
 
-// Load messages from database
+// Load messages from database with decryption
 async function loadMessagesFromDatabase(channelId, limit = 50) {
   if (!dbConnected) {
     logger.warn('Database not connected, using in-memory messages');
@@ -301,7 +361,10 @@ async function loadMessagesFromDatabase(channelId, limit = 50) {
         cm.channel_id as "channelId", 
         cm.user_id as "userId", 
         ua.username,
-        cm.content, 
+        cm.content,
+        cm.encrypted_content,
+        cm.encryption_iv,
+        cm.is_encrypted,
         cm.created_at as "timestamp",
         cm.is_edited as "isEdited",
         cm.edited_at as "editedAt",
@@ -315,20 +378,34 @@ async function loadMessagesFromDatabase(channelId, limit = 50) {
     `, [channelId, limit]);
     
     // Convert to message format and reverse to get chronological order
-    const messages = result.rows.reverse().map(row => ({
-      id: row.id,
-      channelId: row.channelId,
-      userId: row.userId,
-      username: row.username,
-      content: row.content,
-      timestamp: row.timestamp,
-      isEdited: row.isEdited || false,
-      editedAt: row.editedAt,
-      threadId: row.threadId,
-      replyTo: row.replyTo,
-      reactions: [],
-      readReceipts: []
-    }));
+    const messages = result.rows.reverse().map(row => {
+      let content = row.content;
+      
+      // Decrypt if message is encrypted
+      if (row.is_encrypted && row.encrypted_content && row.encryption_iv) {
+        const decrypted = decryptMessage(row.encrypted_content, row.encryption_iv);
+        if (decrypted) {
+          content = decrypted;
+        } else {
+          logger.warn(`Failed to decrypt message ${row.id}, using fallback content`);
+        }
+      }
+      
+      return {
+        id: row.id,
+        channelId: row.channelId,
+        userId: row.userId,
+        username: row.username,
+        content: content,
+        timestamp: row.timestamp,
+        isEdited: row.isEdited || false,
+        editedAt: row.editedAt,
+        threadId: row.threadId,
+        replyTo: row.replyTo,
+        reactions: [],
+        readReceipts: []
+      };
+    });
     
     logger.info(`Loaded ${messages.length} messages from database for channel: ${channelId}`);
     return messages;
