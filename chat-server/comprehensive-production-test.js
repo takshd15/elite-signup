@@ -116,7 +116,11 @@ async function testConnectionBasics() {
       if (authResponse.type === 'authenticated') {
         logTestResult(`JWT Authentication - ${tokenData.user.username}`, true, '', 'Authentication');
       } else {
-        logTestResult(`JWT Authentication - ${tokenData.user.username}`, false, authResponse.message || authResponse.type, 'Authentication');
+        // Properly format the error details
+      const errorDetails = authResponse.message || 
+                          (authResponse.error ? authResponse.error.toString() : '') ||
+                          (typeof authResponse === 'object' ? JSON.stringify(authResponse) : authResponse.type);
+      logTestResult(`JWT Authentication - ${tokenData.user.username}`, false, errorDetails, 'Authentication');
       }
       ws.close();
     } catch (error) {
@@ -344,7 +348,11 @@ async function testConversationAndMessaging() {
       if (convResponse.type === 'conversation_started') {
         logTestResult('Start Conversation', true, `Conversation ID: ${convResponse.conversationId}`, 'Conversation');
       } else {
-        logTestResult('Start Conversation', false, convResponse.message || convResponse.type, 'Conversation');
+        // Properly format the error details
+      const errorDetails = convResponse.message || 
+                          (convResponse.error ? convResponse.error.toString() : '') ||
+                          (typeof convResponse === 'object' ? JSON.stringify(convResponse) : convResponse.type);
+      logTestResult('Start Conversation', false, errorDetails, 'Conversation');
       }
     }
     
@@ -378,7 +386,11 @@ async function testConversationAndMessaging() {
       if (msgResponse.type === 'private_message_sent') {
         logTestResult('Send Private Message', true, `Message ID: ${msgResponse.message.id}`, 'Messaging');
       } else {
-        logTestResult('Send Private Message', false, msgResponse.message || msgResponse.type, 'Messaging');
+        // Properly format the error details
+      const errorDetails = msgResponse.message || 
+                          (msgResponse.error ? msgResponse.error.toString() : '') ||
+                          (typeof msgResponse === 'object' ? JSON.stringify(msgResponse) : msgResponse.type);
+      logTestResult('Send Private Message', false, errorDetails, 'Messaging');
       }
     }
     
@@ -462,7 +474,11 @@ async function testConversationAndMessaging() {
       if (msgResponse.type === 'private_message_sent') {
         logTestResult('Special Characters in Message', true, '', 'Messaging');
       } else {
-        logTestResult('Special Characters in Message', false, msgResponse.message || msgResponse.type, 'Messaging');
+        // Properly format the error details
+      const errorDetails = msgResponse.message || 
+                          (msgResponse.error ? msgResponse.error.toString() : '') ||
+                          (typeof msgResponse === 'object' ? JSON.stringify(msgResponse) : msgResponse.type);
+      logTestResult('Special Characters in Message', false, errorDetails, 'Messaging');
       }
     }
     
@@ -489,7 +505,11 @@ async function testConversationAndMessaging() {
       if (msgResponse.type === 'private_message_sent') {
         logTestResult('Message to Offline User', true, 'Message sent but recipient not online', 'Messaging');
       } else {
-        logTestResult('Message to Offline User', false, msgResponse.message || msgResponse.type, 'Messaging');
+        // Properly format the error details
+      const errorDetails = msgResponse.message || 
+                          (msgResponse.error ? msgResponse.error.toString() : '') ||
+                          (typeof msgResponse === 'object' ? JSON.stringify(msgResponse) : msgResponse.type);
+      logTestResult('Message to Offline User', false, errorDetails, 'Messaging');
       }
     }
     
@@ -531,7 +551,11 @@ async function testTypingAndReadReceipts() {
       if (typingResponse.type === 'typing_indicator_sent') {
         logTestResult('Typing Indicator', true, '', 'Typing');
       } else {
-        logTestResult('Typing Indicator', false, typingResponse.message || typingResponse.type, 'Typing');
+        // Properly format the error details
+      const errorDetails = typingResponse.message || 
+                          (typingResponse.error ? typingResponse.error.toString() : '') ||
+                          (typeof typingResponse === 'object' ? JSON.stringify(typingResponse) : typingResponse.type);
+      logTestResult('Typing Indicator', false, errorDetails, 'Typing');
       }
     }
     
@@ -574,7 +598,11 @@ async function testTypingAndReadReceipts() {
         if (readResponse.type === 'message_marked_read') {
           logTestResult('Mark Message as Read', true, '', 'Read Receipts');
         } else {
-          logTestResult('Mark Message as Read', false, readResponse.message || readResponse.type, 'Read Receipts');
+          // Properly format the error details
+          const errorDetails = readResponse.message || 
+                              (readResponse.error ? readResponse.error.toString() : '') ||
+                              (typeof readResponse === 'object' ? JSON.stringify(readResponse) : readResponse.type);
+          logTestResult('Mark Message as Read', false, errorDetails, 'Read Receipts');
         }
       }
     }
@@ -832,7 +860,11 @@ async function testStressAndPerformance() {
       if (response.type === 'private_message_sent') {
         logTestResult('Large Message Handling', true, '999 character message sent successfully', 'Performance');
       } else {
-        logTestResult('Large Message Handling', false, response.message || response.type, 'Performance');
+        // Properly format the error details
+      const errorDetails = response.message || 
+                          (response.error ? response.error.toString() : '') ||
+                          (typeof response === 'object' ? JSON.stringify(response) : response.type);
+      logTestResult('Large Message Handling', false, errorDetails, 'Performance');
       }
     }
     

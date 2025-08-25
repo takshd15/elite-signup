@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-25T22:21:36.148Z",
+  "timestamp": "2025-08-25T23:10:19.161Z",
   "server": "ws://localhost:3001",
-  "duration": 63851,
+  "duration": 57663,
   "summary": {
-    "passed": 26,
-    "failed": 4,
-    "successRate": "86.7"
+    "passed": 27,
+    "failed": 2,
+    "successRate": "93.1"
   },
   "categories": {
     "Connection": {
@@ -36,20 +36,24 @@
       "passed": 1,
       "failed": 0
     },
+    "Read Receipts": {
+      "passed": 0,
+      "failed": 1
+    },
     "Error Handling": {
       "passed": 5,
       "failed": 0
     },
     "Performance": {
-      "passed": 2,
-      "failed": 1
+      "passed": 1,
+      "failed": 0
     },
     "Security": {
-      "passed": 0,
-      "failed": 3
+      "passed": 1,
+      "failed": 1
     },
     "Database": {
-      "passed": 1,
+      "passed": 2,
       "failed": 0
     }
   },
@@ -59,210 +63,213 @@
       "passed": true,
       "details": "",
       "category": "Connection",
-      "timestamp": "2025-08-25T22:20:32.319Z"
+      "timestamp": "2025-08-25T23:09:21.520Z"
     },
     {
       "name": "JWT Authentication - user1",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:32.552Z"
+      "timestamp": "2025-08-25T23:09:21.881Z"
     },
     {
       "name": "JWT Authentication - user2",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:33.578Z"
+      "timestamp": "2025-08-25T23:09:23.092Z"
     },
     {
       "name": "JWT Authentication - user3",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:34.497Z"
+      "timestamp": "2025-08-25T23:09:24.347Z"
     },
     {
       "name": "Revoked JWT Rejection",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:35.417Z"
+      "timestamp": "2025-08-25T23:09:25.763Z"
     },
     {
       "name": "Invalid JWT Rejection",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:35.420Z"
+      "timestamp": "2025-08-25T23:09:25.766Z"
     },
     {
       "name": "Empty Token Rejection",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:35.422Z"
+      "timestamp": "2025-08-25T23:09:25.768Z"
     },
     {
       "name": "No Token Rejection",
       "passed": true,
       "details": "",
       "category": "Authentication",
-      "timestamp": "2025-08-25T22:20:35.424Z"
+      "timestamp": "2025-08-25T23:09:25.770Z"
     },
     {
       "name": "Get Online Users (Empty)",
       "passed": true,
       "details": "",
       "category": "User Management",
-      "timestamp": "2025-08-25T22:20:35.625Z"
+      "timestamp": "2025-08-25T23:09:26.063Z"
     },
     {
       "name": "Multiple Users Online",
       "passed": true,
       "details": "2 users online",
       "category": "User Management",
-      "timestamp": "2025-08-25T22:20:41.267Z"
+      "timestamp": "2025-08-25T23:09:29.797Z"
     },
     {
       "name": "User Disconnection Handling",
       "passed": true,
       "details": "User properly removed from online list",
       "category": "User Management",
-      "timestamp": "2025-08-25T22:20:45.225Z"
+      "timestamp": "2025-08-25T23:09:33.629Z"
     },
     {
       "name": "Start Conversation",
       "passed": true,
       "details": "Conversation ID: conv_user1_user2",
       "category": "Conversation",
-      "timestamp": "2025-08-25T22:20:52.224Z"
+      "timestamp": "2025-08-25T23:09:40.630Z"
     },
     {
       "name": "Send Private Message",
       "passed": true,
-      "details": "Message ID: 18a5ea10-155f-420d-9ca6-145db6fa191c",
+      "details": "Message ID: a6624f67-63fa-4fe2-b03b-d7b1b198ada8",
       "category": "Messaging",
-      "timestamp": "2025-08-25T22:20:54.771Z"
+      "timestamp": "2025-08-25T23:09:43.879Z"
     },
     {
       "name": "Empty Message Validation",
       "passed": true,
       "details": "",
       "category": "Message Validation",
-      "timestamp": "2025-08-25T22:20:54.976Z"
+      "timestamp": "2025-08-25T23:09:44.084Z"
     },
     {
       "name": "Long Message Validation",
       "passed": true,
       "details": "",
       "category": "Message Validation",
-      "timestamp": "2025-08-25T22:20:56.103Z"
+      "timestamp": "2025-08-25T23:09:45.112Z"
     },
     {
       "name": "Special Characters in Message",
       "passed": true,
       "details": "",
       "category": "Messaging",
-      "timestamp": "2025-08-25T22:20:57.903Z"
+      "timestamp": "2025-08-25T23:09:47.565Z"
     },
     {
       "name": "Message to Offline User",
       "passed": true,
       "details": "Message sent but recipient not online",
       "category": "Messaging",
-      "timestamp": "2025-08-25T22:20:59.072Z"
+      "timestamp": "2025-08-25T23:09:48.914Z"
     },
     {
       "name": "Typing Indicator",
       "passed": true,
       "details": "",
       "category": "Typing",
-      "timestamp": "2025-08-25T22:21:00.289Z"
+      "timestamp": "2025-08-25T23:09:50.045Z"
+    },
+    {
+      "name": "Mark Message as Read",
+      "passed": false,
+      "details": {
+        "id": "03c778fd-c6f5-4800-a430-1361b806fe22",
+        "conversationId": "conv_user1_user2",
+        "senderId": "user1",
+        "recipientId": "user2",
+        "username": "user1",
+        "content": "Message to mark as read",
+        "timestamp": "2025-08-25T23:09:52.276Z",
+        "isRead": false,
+        "replyTo": null
+      },
+      "category": "Read Receipts",
+      "timestamp": "2025-08-25T23:09:53.608Z"
     },
     {
       "name": "Unknown Message Type Handling",
       "passed": true,
       "details": "",
       "category": "Error Handling",
-      "timestamp": "2025-08-25T22:21:02.009Z"
+      "timestamp": "2025-08-25T23:09:53.611Z"
     },
     {
       "name": "Malformed JSON Handling",
       "passed": true,
       "details": "Server properly rejected malformed JSON and continued working",
       "category": "Error Handling",
-      "timestamp": "2025-08-25T22:21:02.117Z"
+      "timestamp": "2025-08-25T23:09:53.716Z"
     },
     {
       "name": "Unauthenticated Message Rejection",
       "passed": true,
       "details": "",
       "category": "Error Handling",
-      "timestamp": "2025-08-25T22:21:02.119Z"
+      "timestamp": "2025-08-25T23:09:53.719Z"
     },
     {
       "name": "Missing Required Fields Validation",
       "passed": true,
       "details": "",
       "category": "Error Handling",
-      "timestamp": "2025-08-25T22:21:03.168Z"
+      "timestamp": "2025-08-25T23:09:54.017Z"
     },
     {
       "name": "Invalid Recipient ID Format",
       "passed": true,
       "details": "",
       "category": "Error Handling",
-      "timestamp": "2025-08-25T22:21:04.411Z"
+      "timestamp": "2025-08-25T23:09:55.348Z"
     },
     {
       "name": "Multiple Rapid Connections",
       "passed": true,
-      "details": "10/10 connections in 16676ms",
+      "details": "10/10 connections in 12084ms",
       "category": "Performance",
-      "timestamp": "2025-08-25T22:21:21.088Z"
-    },
-    {
-      "name": "Rapid Message Sending",
-      "passed": true,
-      "details": "20/20 messages in 5325ms",
-      "category": "Performance",
-      "timestamp": "2025-08-25T22:21:28.767Z"
-    },
-    {
-      "name": "Large Message Handling",
-      "passed": false,
-      "details": "Detected spam pattern",
-      "category": "Performance",
-      "timestamp": "2025-08-25T22:21:28.983Z"
-    },
-    {
-      "name": "Rate Limiting",
-      "passed": false,
-      "details": "Rate limiting not triggered",
-      "category": "Security",
-      "timestamp": "2025-08-25T22:21:30.004Z"
+      "timestamp": "2025-08-25T23:10:07.432Z"
     },
     {
       "name": "XSS Prevention",
       "passed": false,
       "details": "XSS content not handled properly",
       "category": "Security",
-      "timestamp": "2025-08-25T22:21:31.224Z"
+      "timestamp": "2025-08-25T23:10:11.119Z"
     },
     {
       "name": "SQL Injection Prevention",
-      "passed": false,
-      "details": "Rate limit exceeded",
+      "passed": true,
+      "details": "SQL injection content handled safely",
       "category": "Security",
-      "timestamp": "2025-08-25T22:21:32.355Z"
+      "timestamp": "2025-08-25T23:10:12.968Z"
+    },
+    {
+      "name": "Message Persistence",
+      "passed": true,
+      "details": "Message persisted and retrieved from database",
+      "category": "Database",
+      "timestamp": "2025-08-25T23:10:18.996Z"
     },
     {
       "name": "User Data Retrieval",
       "passed": true,
       "details": "Retrieved data for user1",
       "category": "Database",
-      "timestamp": "2025-08-25T22:21:36.146Z"
+      "timestamp": "2025-08-25T23:10:19.159Z"
     }
   ]
 }
