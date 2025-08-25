@@ -7,7 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from models.base import Base
 
 class JwtRevocation(Base):
-    __tablename__ = "public.jwt_revocation"
+    __tablename__ = "jwt_revocation"
+    __table_args__ = {"schema": "public"}
 
     jti: Mapped[str] = mapped_column(Text, primary_key=True)
     revoked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

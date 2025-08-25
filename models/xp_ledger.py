@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import uuid
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Integer, Text, DateTime, ForeignKey, Index, CheckConstraint, func
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import Integer, Text, DateTime, ForeignKey, Index, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql.expression import text
 
 from models.base import Base
 from models.user import AppUser
@@ -16,11 +15,10 @@ ALLOWED_REASON = ("verified_completion", "streak_bonus", "adjustment")
 
 
 class XpLedger(Base):
-    __tablename__ = "challenges_schema.xp_ledger"
+    __tablename__ = "xp_ledger"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    # FK columns should be scalar ids
     user_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("public.users_auth.user_id", ondelete="CASCADE"),
@@ -28,16 +26,20 @@ class XpLedger(Base):
     )
 
     delta: Mapped[int] = mapped_column(Integer, nullable=False)
-    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    reason: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 'verified_completion' | 'streak_bonus' | 'adjustment'
 
+    # ✅ schema-qualified FK target; nullable + SET NULL matches DB intent
     ref_uc_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("user_challenge.id", ondelete="SET NULL")
+        Integer,
+        ForeignKey("challenges_schema.user_challenge.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True), server_default=text("now()"), nullable=False
     )
-
     # Relationships (no back_populates required unless you add them on the other side)
     user: Mapped[AppUser] = relationship()
     user_challenge: Mapped[Optional[UserChallenge]] = relationship()
@@ -48,6 +50,7 @@ class XpLedger(Base):
             name="xp_reason_check",
         ),
         Index("ix_xp_user_time", "user_id", "created_at"),
+        {"schema": "challenges_schema"}
     )
 
     def __repr__(self) -> str:
