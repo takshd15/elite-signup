@@ -33,6 +33,9 @@ This is a **JWT-verified chat microservice** that operates independently but use
 ### **Testing**
 - `simple-test.js` - Basic functionality test
 - `test-complete-functionality.js` - Comprehensive test suite
+- `generate-jwt-tokens.js` - **Generate fresh JWT tokens for testing**
+- `comprehensive-production-test.js` - Full production test suite
+- `test-enhanced-features.js` - Advanced features testing
 
 ---
 
@@ -44,7 +47,38 @@ cd chat-server
 npm install
 ```
 
-### **2. Environment Variables (Optional)**
+### **2. Generate Fresh JWT Tokens (IMPORTANT!)**
+**⚠️ CRITICAL: You MUST generate fresh JWT tokens before testing, or the chat server won't work!**
+
+The included test tokens in `test-jwt-tokens.json` are **expired by default**. To generate fresh tokens:
+
+```bash
+# Generate new JWT tokens with 24-hour expiration
+node generate-jwt-tokens.js
+```
+
+**Expected Output:**
+```
+🔑 Generating fresh JWT tokens for testing...
+✅ Generated fresh JWT tokens:
+   - Valid tokens: 3
+   - Revoked token: 1
+   - Expiration: 2025-01-26T23:01:10.524Z
+📄 Tokens saved to: test-jwt-tokens.json
+
+🔍 Verifying tokens...
+✅ Token 1 is valid: user1
+✅ Token 2 is valid: user2
+✅ Token 3 is valid: user3
+```
+
+**Why This Is Required:**
+- JWT tokens have expiration times (24 hours by default)
+- Expired tokens cause authentication failures
+- The chat server requires valid tokens for all operations
+- Fresh tokens ensure tests and manual testing work properly
+
+### **3. Environment Variables (Optional)**
 ```bash
 # Database (defaults to AWS RDS)
 DB_HOST=your-db-host
@@ -192,8 +226,20 @@ node test-complete-functionality.js
 
 ## 🧪 **Testing**
 
+### **⚠️ IMPORTANT: Generate Fresh Tokens First!**
+Before running any tests, **always generate fresh JWT tokens**:
+
+```bash
+# Generate fresh tokens (required for all tests)
+node generate-jwt-tokens.js
+
+# Then run tests
+node test-complete-functionality.js
+```
+
 ### **Run Complete Test Suite**
 ```bash
+# Make sure you have fresh tokens first!
 node test-complete-functionality.js
 ```
 
@@ -204,6 +250,12 @@ node test-complete-functionality.js
 - ✅ Reply functionality
 - ✅ Reaction system
 - ✅ Error handling
+
+### **Available Test Files**
+- `comprehensive-production-test.js` - Full production server test suite
+- `test-enhanced-features.js` - Advanced features (reactions, editing, deletion)
+- `test-production-message-features.js` - Production message features test
+- `simple-connection-test.js` - Basic connectivity test
 
 ### **Manual Testing**
 ```bash
@@ -273,9 +325,21 @@ taskkill /F /IM node.exe
 
 **JWT verification fails:**
 ```bash
+# Generate fresh JWT tokens (most common issue)
+node generate-jwt-tokens.js
+
 # Verify JWT secret matches Java backend
 # Check database tables exist
 # Ensure verification codes are valid
+```
+
+**Authentication errors in tests:**
+```bash
+# Always generate fresh tokens before testing
+node generate-jwt-tokens.js
+
+# Check token expiration
+# Verify server is running on port 3001
 ```
 
 ---
