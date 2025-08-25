@@ -5,6 +5,10 @@ node_modules/
 .next/
 dist/
 
+# Maven build artifacts
+target/
+*.class
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
