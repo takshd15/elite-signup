@@ -18,7 +18,7 @@ def is_revoked(jti: Optional[str], db: Optional[Session] = None) -> bool:
         owns = True
     try:
         row = db.execute(
-            select(JwtRevocation.jti).where(JwtRevocation.jti == jti).limit(1)
+            select(JwtRevocation.JwtRevocation.jti).where(JwtRevocation.JwtRevocation.jti == jti).limit(1)
         ).first()
         return row is not None
     finally:

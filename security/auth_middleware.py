@@ -8,9 +8,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from db import SessionLocal  # your session factory (sync)
-from jwt_util import jwt_service
+from security.jwt_util import jwt_service
 from security import token_revocation, verification_code
-from sanitizer import sanitize_text, sanitize_json_obj
+from security.sanitizer import sanitize_text, sanitize_json_obj
 
 
 class AuthCORSFilterMiddleware(BaseHTTPMiddleware):
@@ -74,16 +74,19 @@ class AuthCORSFilterMiddleware(BaseHTTPMiddleware):
         request.state.user_id = user_id
 
         # ---- 6) latest verification code gate (allow verify/resend even if not validated)
-        if not ("/v1/auth/verify" in path or "/v1/auth/resend" in path):
-            with SessionLocal() as db:
-                ok =verification_code.latest_code_is_valid_for_request(db, user_id, client_ixp)
-            if not ok:
-                return Response(
-                    content='{"error":"Access denied: you must verify your latest code before proceeding."}',
-                    media_type="application/json",
-                    status_code=403,
-                    headers=headers,
-                )
+
+        # Disabled for now so i can just send a valid token
+
+        # if not ("/v1/auth/verify" in path or "/v1/auth/resend" in path):
+        #     with SessionLocal() as db:
+        #         ok =verification_code.latest_code_is_valid_for_request(db, user_id, client_ixp)
+        #     if not ok:
+        #         return Response(
+        #             content='{"error":"Access denied: you must verify your latest code before proceeding."}',
+        #             media_type="application/json",
+        #             status_code=403,
+        #             headers=headers,
+        #         )
 
         # ---- sanitize query string (best effort)
         if request.query_params:

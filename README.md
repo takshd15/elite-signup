@@ -46,7 +46,7 @@ PY
 uvicorn app:app --reload --port 9000
 ```
 
-Open: http://127.0.0.1:9000/health
+Open: http://127.0.0.1:9000/v1/parser/health
 
 ---
 
@@ -110,7 +110,7 @@ Form field: file=@<resume.pdf|docx>
 
 **Example:**
 ```bash
-curl -s -X POST "http://127.0.0.1:9000/api/resume/score" \
+curl -s -X POST "http://127.0.0.1:9000/v1/parser/resume/score" \
   -F "file=@/path/to/resume.pdf"
 ```
 
