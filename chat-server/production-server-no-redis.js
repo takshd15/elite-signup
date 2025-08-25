@@ -440,7 +440,7 @@ function validateToken(token) {
 // JWT verification with Java backend
 async function verifyJWTWithBackend(token) {
   try {
-    const response = await axios.post('http://localhost:8080/api/auth/validate', {
+    const response = await axios.post('http://localhost:8081/v1/auth/validate', {
       token: token
     }, {
       headers: {
