@@ -1176,7 +1176,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start server
-const port = 3001;
+const port = process.env.PORT || 3001;
 console.log('Starting production-ready chat server (No Redis)...');
 console.log('Environment variables:', {
   NODE_ENV: process.env.NODE_ENV || 'production',
