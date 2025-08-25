@@ -3,7 +3,7 @@ const http = require('http');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const winston = require('winston');
-const axios = require('axios');
+
 // Database connection for user lookup and message persistence
 const { Client } = require('pg');
 const dbClient = new Client({
@@ -264,7 +264,7 @@ server.on('request', (req, res) => {
   }
 });
 
-// Fetch user details from database
+// Fetch user details from database - same logic as Java backend
 async function getUserDetails(userId) {
   if (!dbConnected) {
     logger.warn('Database not connected, using fallback user details');
@@ -279,6 +279,7 @@ async function getUserDetails(userId) {
   }
 
   try {
+    // Query matches Java backend's user lookup logic
     const query = `
       SELECT ua.user_id, ua.username, ua.email, upi.first_name, upi.last_name
       FROM users_auth ua
@@ -416,52 +417,123 @@ async function loadMessagesFromDatabase(channelId, limit = 50) {
   }
 }
 
-// Token validation - using same JWT system as Java backend
-function validateToken(token) {
+
+
+// JWT verification - same logic as Java backend
+async function verifyJWTWithBackend(token, clientIp) {
   try {
-    // Decode the base64 key and verify JWT using HMAC-SHA256
-    const secretKey = Buffer.from(JWT_SECRET, 'base64');
-    const decoded = jwt.verify(token, secretKey, { algorithms: ['HS256'] });
-    
-    // Extract user information from JWT
+    // 1. Validate JWT signature and expiration
+    if (!validateToken(token)) {
+      return { valid: false, error: 'Invalid token signature or expired' };
+    }
+
+    // 2. Extract user ID and JTI
+    const userId = extractUserId(token);
+    const jti = extractJti(token);
+
+    // 3. Check if JTI is revoked in database
+    const isRevoked = await checkJTIRevoked(jti);
+    if (isRevoked) {
+      return { valid: false, error: 'Token has been revoked' };
+    }
+
+    // 4. Check if user has validated their latest verification code
+    const hasValidatedCode = await checkVerificationCodeValidated(userId, clientIp);
+    if (!hasValidatedCode) {
+      return { valid: false, error: 'User must verify latest code before proceeding' };
+    }
+
+    // 5. Get user details from database
+    const userDetails = await getUserDetails(userId);
+    if (!userDetails) {
+      return { valid: false, error: 'User not found in database' };
+    }
+
     return {
-      userId: decoded.sub, // Subject contains user ID
-      username: decoded.sub, // For now, use user ID as username
-      email: decoded.sub, // For now, use user ID as email
-      exp: decoded.exp * 1000, // Convert to milliseconds
-      jti: decoded.jti // JWT ID for revocation tracking
+      valid: true,
+      user: userDetails
     };
+
   } catch (error) {
-    logger.warn('JWT validation failed:', error.message);
-    return null;
+    logger.error('JWT verification error:', error.message);
+    return { valid: false, error: 'Token validation failed' };
   }
 }
 
-// JWT verification with Java backend
-async function verifyJWTWithBackend(token) {
+// JWT validation functions - same logic as Java backend
+function validateToken(token) {
   try {
-    const response = await axios.post('http://localhost:8081/v1/auth/validate', {
-      token: token
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      timeout: 5000 // 5 second timeout
-    });
-    
-    if (response.status === 200 && response.data.valid) {
-      return {
-        valid: true,
-        user: response.data.user
-      };
-    } else {
-      return { valid: false, error: 'Token validation failed' };
-    }
+    // Use JWT_SECRET directly as string (same as Java backend)
+    jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    return true;
   } catch (error) {
-    logger.error('JWT verification error:', error.message);
-    return { valid: false, error: 'Backend verification failed' };
+    return false;
   }
 }
+
+function extractUserId(token) {
+  try {
+    // Use JWT_SECRET directly as string (same as Java backend)
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    return decoded.sub; // subject contains user ID
+  } catch (error) {
+    throw new Error('Failed to extract user ID from token');
+  }
+}
+
+function extractJti(token) {
+  try {
+    // Use JWT_SECRET directly as string (same as Java backend)
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    return decoded.jti; // JWT ID
+  } catch (error) {
+    throw new Error('Failed to extract JTI from token');
+  }
+}
+
+// Check if JTI is revoked in database
+async function checkJTIRevoked(jti) {
+  try {
+    const result = await dbClient.query(
+      'SELECT 1 FROM jwt_revocation WHERE jti = $1 LIMIT 1',
+      [jti]
+    );
+    return result.rows.length > 0;
+  } catch (error) {
+    logger.error('Error checking JTI revocation:', error);
+    return false; // If we can't check, assume not revoked
+  }
+}
+
+// Check if user has validated their latest verification code
+async function checkVerificationCodeValidated(userId, clientIp) {
+  try {
+    const result = await dbClient.query(`
+      SELECT vc.*,
+             NOW() < vc.expiration_date as still_valid,
+             vc.request_ip = $2 as ip_matches
+      FROM verification_codes vc
+      WHERE vc.user_id = $1
+      ORDER BY vc.created_at DESC
+      LIMIT 1
+    `, [userId, clientIp]); // Use actual client IP
+
+    if (result.rows.length === 0) {
+      return false; // No verification code found
+    }
+
+    const latestCode = result.rows[0];
+
+    // Check if code was NOT used, still valid (before expiration_date), and IP matches
+    // Same logic as Java backend: !latestCode.isUsed() && still_valid && ip_matches
+    return !latestCode.used && latestCode.still_valid && latestCode.ip_matches;
+  } catch (error) {
+    logger.error('Error checking verification code:', error);
+    return false; // If we can't check, assume not validated
+  }
+}
+
+
 
 // Rate limiting function
 function checkRateLimit(userId, clientId) {
@@ -584,6 +656,14 @@ wss.on('connection', (ws, req) => {
   
   logger.info(`New WebSocket connection: ${clientId} from ${clientIp}`);
   metrics.connections++;
+  
+  // Store initial client information with IP
+  clients.set(clientId, {
+    ws,
+    clientIp,
+    channels: new Set(),
+    lastActivity: Date.now()
+  });
   
   // Set connection timeout
   const connectionTimeout = setTimeout(() => {
@@ -734,6 +814,10 @@ async function handleMessage(ws, message, clientId) {
 async function handleAuthentication(ws, data, clientId) {
   const { token } = data;
   
+  // Get client IP from stored client information
+  const client = clients.get(clientId);
+  const clientIp = client ? client.clientIp : 'unknown';
+  
   if (!token) {
     ws.send(JSON.stringify({
       type: 'auth_error',
@@ -743,7 +827,7 @@ async function handleAuthentication(ws, data, clientId) {
   }
   
   // First verify JWT with Java backend
-  const verificationResult = await verifyJWTWithBackend(token);
+  const verificationResult = await verifyJWTWithBackend(token, clientIp);
   
   if (!verificationResult.valid) {
     ws.send(JSON.stringify({
@@ -771,13 +855,12 @@ async function handleAuthentication(ws, data, clientId) {
     }
   }
   
-  // Store client information
-  clients.set(clientId, {
-    ws,
-    user,
-    channels: new Set(),
-    lastActivity: Date.now()
-  });
+  // Update client information with user data
+  const existingClient = clients.get(clientId);
+  if (existingClient) {
+    existingClient.user = user;
+    existingClient.lastActivity = Date.now();
+  }
   
   // Store session in memory
   sessions.set(user.userId, clientId);
