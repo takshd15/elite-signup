@@ -3,6 +3,7 @@ const http = require('http');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const winston = require('winston');
+const axios = require('axios');
 // Database connection for user lookup and message persistence
 const { Client } = require('pg');
 const dbClient = new Client({
@@ -436,6 +437,32 @@ function validateToken(token) {
   }
 }
 
+// JWT verification with Java backend
+async function verifyJWTWithBackend(token) {
+  try {
+    const response = await axios.post('http://localhost:8080/api/auth/validate', {
+      token: token
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      timeout: 5000 // 5 second timeout
+    });
+    
+    if (response.status === 200 && response.data.valid) {
+      return {
+        valid: true,
+        user: response.data.user
+      };
+    } else {
+      return { valid: false, error: 'Token validation failed' };
+    }
+  } catch (error) {
+    logger.error('JWT verification error:', error.message);
+    return { valid: false, error: 'Backend verification failed' };
+  }
+}
+
 // Rate limiting function
 function checkRateLimit(userId, clientId) {
   const now = Date.now();
@@ -715,30 +742,20 @@ async function handleAuthentication(ws, data, clientId) {
     return;
   }
   
-  const tokenData = validateToken(token);
-  if (!tokenData) {
+  // First verify JWT with Java backend
+  const verificationResult = await verifyJWTWithBackend(token);
+  
+  if (!verificationResult.valid) {
     ws.send(JSON.stringify({
       type: 'auth_error',
-      message: 'Invalid token'
+      message: verificationResult.error || 'Token validation failed'
     }));
+    logger.warn(`Authentication failed: ${verificationResult.error}`);
     return;
   }
   
-  // Fetch user details from database
-  const userDetails = await getUserDetails(tokenData.userId);
-  if (!userDetails) {
-    ws.send(JSON.stringify({
-      type: 'auth_error',
-      message: 'User not found in database'
-    }));
-    return;
-  }
-  
-  // Combine token data with user details
-  const user = {
-    ...tokenData,
-    ...userDetails
-  };
+  // Use user data from backend verification
+  const user = verificationResult.user;
   
   // Check if user is already connected elsewhere
   const existingSession = sessions.get(user.userId);
