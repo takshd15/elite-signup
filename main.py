@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 
 from routers.parser import ensure_spacy, ensure_nltk, NLTK_RESOURCES, SPACY_MODEL
-from routers import parser, challenges, tasks
+from routers import parser, challenges, tasks,xp
 from security import auth_middleware
 
 app = FastAPI(title="Challenge Verification API", version="0.1.0")

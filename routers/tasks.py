@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from db import get_session 
+from db import get_session
 from models.task import Task, TaskOut
 
 router = APIRouter()
@@ -25,7 +25,7 @@ def get_users_tasks(db : Session,user_id : int) -> int:
     return  db.execute(
     text("SELECT challenges_schema.count_completed_tasks(:uid) AS total_xp"),
     {"uid": user_id},
-).scalar_one() * 10
+).scalar_one()
 
 @router.get("/get_tasks_xp")
 def get_tasks_xp(
