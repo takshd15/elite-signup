@@ -154,4 +154,41 @@ CREATE TABLE IF NOT EXISTS challenges_schema.xp_ledger
 
 CREATE INDEX IF NOT EXISTS idx_xp_user_created ON challenges_schema.xp_ledger (user_id, created_at DESC);
 
+create table user_tasks
+(
+    id            integer default nextval('challenges_schema.tasks_id_seq'::regclass) not null
+        primary key,
+    title         varchar(140)                                                        not null,
+    notes         varchar,
+    urgency       varchar                                                             not null,
+    "dueAt"       timestamp with time zone                                            not null,
+    "createdAt"   timestamp with time zone                                            not null,
+    "completedAt" timestamp with time zone,
+    user_id       integer                                                             not null
+        references public.users_auth
+);
+
+alter sequence tasks_id_seq owned by user_tasks.id;
+
+create or replace function get_user_total_xp(p_user_id integer) returns integer
+    stable
+    language sql
+as
+$$
+  SELECT COALESCE(SUM(delta), 0)::INT
+  FROM challenges_schema.xp_ledger
+  WHERE user_id = p_user_id;
+$$;
+
+create or replace function count_completed_tasks(p_user_id integer) returns bigint
+    stable
+    language sql
+as
+$$
+  SELECT COUNT(*)::bigint
+  FROM challenges_schema.user_tasks AS ut
+  WHERE ut.user_id = p_user_id
+    AND ut."completedAt" IS NOT NULL;
+$$;
+
 COMMIT;

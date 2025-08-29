@@ -555,30 +555,163 @@ DATABASE_URL or (DB_URL, DB_USER, DB_PASS).
 
 **Verification sub-types:** you can extend link-check into kaggle-link, figma-link, cert-verify-link, etc., with specific validators.
 
-Curl examples
-# Get daily pack
+## Curl examples
+### Get daily pack
 curl -H "Authorization: Bearer <JWT>" \
   https://api.example.com/v1/challenges/get_daily
 
-# Verify by text
+### Verify by text
 curl -X POST -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
   -d '{"text":"Today I completed … (>= 50 chars)"}' \
   https://api.example.com/v1/challenges/verify/text/123
 
-# Verify by link
+### Verify by link
 curl -X POST -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
   -d '{"url":"https://myapp.example.com/health"}' \
   https://api.example.com/v1/challenges/verify/link/123
 
-# Verify by photo
+### Verify by photo
 curl -X POST -H "Authorization: Bearer <JWT>" -F "file=@/path/to/proof.jpg" \
   https://api.example.com/v1/challenges/verify/photo/123
 
-# Replace a challenge
+### Replace a challenge
 curl -X POST -H "Authorization: Bearer <JWT>" \
   https://api.example.com/v1/challenges/replace/123
 
-# Refresh monthly pack
+### Refresh monthly pack
 curl -X POST -H "Authorization: Bearer <JWT>" \
   https://api.example.com/v1/challenges/refresh/monthly
 
+## Endpoints Overview
+
+### Aggregated XP
+- `GET xp/get_xp`  
+  Combines tasks XP and challenges XP:
+
+  ```python
+  total_xp = get_users_tasks(db, user_id) * 10
+  total_xp += get_users_challenges_xp(db, user_id)
+  ```
+
+  Response:
+  ```json
+  { "user_id": 1, "total_xp": 120 }
+  ```
+
+### Tasks
+All endpoints in `routers/tasks.py` expect `request.state.user_id` to be set by JWT middleware.
+
+- `GET /tasks/get_tasks_xp`  
+  Returns XP from tasks only (completed_count * 10).
+
+  Response:
+  ```json
+  { "user_id": 1, "total_tasks_xp": 50 }
+  ```
+
+- `GET /tasks/get_tasks_count`  
+  Returns the number of completed tasks.
+
+  Response:
+  ```json
+  { "user_id": 1, "total_tasks": 5 }
+  ```
+
+- `GET /tasks/get_tasks` (response_model = List[TaskOut])  
+  Returns all tasks owned by the user.
+
+- `POST /tasks/create_task` (response_model = TaskOut)  
+  Creates a task for the authenticated user.
+
+- `PATCH /tasks/update_task/{task_id}` (response_model = TaskOut)  
+  Updates an existing task; only the owner can update.
+
+- `PATCH /tasks/solve_task/{task_id}` (response_model = TaskOut)  
+  Marks a task as solved by setting `completedAt` to the current UTC time.
+
+- `DELETE /tasks/delete_task/{task_id}`  
+  Deletes a task; only the owner can delete. Returns `{"deleted": true}` on success.
+
+---
+
+## Data Contracts
+
+### TaskDTO (request body for create/update)
+```json
+{
+  "title": "First Task",
+  "notes": "This is the first task",
+  "urgency": "low",
+  "dueAt": "2025-08-31 23:59:59.999999+03"
+}
+```
+
+The code currently treats `dueAt` as a string. If you prefer strict typing, parse to `datetime` in the route or switch the model to use `datetime` and let Pydantic handle it.
+
+### TaskOut (response model)
+Fields returned by `TaskOut` include:
+- `id`: integer
+- `user_id`: integer
+- `title`: string
+- `notes`: string or null
+- `urgency`: string (`low`, `medium`, `high` as per your check constraint)
+- `dueAt`: string or datetime depending on your schema serialization
+- `createdAt`: string or datetime
+- `completedAt`: string, datetime, or null
+
+Make sure your Pydantic configuration uses `model_config = ConfigDict(from_attributes=True)` so ORM rows serialize correctly.
+
+---
+
+# Tasks & Challenges XP API
+
+## Sample Requests
+
+Assuming the app runs on `http://127.0.0.1:8000` and your auth middleware injects `user_id`:
+
+### Create a Task
+```bash
+curl -X POST "http://127.0.0.1:8000/tasks/create_task"  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json"   -d '{
+    "title": "First Task",
+    "notes": "This is the first task",
+    "urgency": "low",
+    "dueAt": "2025-08-31 23:59:59.999999+03"
+  }'
+```
+
+### List Tasks
+```bash
+curl "http://127.0.0.1:8000/tasks/get_tasks"
+```
+
+### Update a Task
+```bash
+curl -X PATCH "http://127.0.0.1:8000/tasks/update_task/1"  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json"   -d '{
+    "title": "Updated Task",
+    "notes": "Changed notes",
+    "urgency": "medium",
+    "dueAt": "2025-09-01 18:00:00+03"
+  }'
+```
+
+### Mark as Solved
+```bash
+curl -X PATCH "http://127.0.0.1:8000/tasks/solve_task/1" -H "Authorization: Bearer <JWT>"
+```
+
+### Delete a Task
+```bash
+curl -X DELETE "http://127.0.0.1:8000/tasks/delete_task/1" -H "Authorization: Bearer <JWT>"
+```
+
+### Get Tasks XP
+```bash
+curl "http://127.0.0.1:8000/tasks/get_tasks_xp" -H "Authorization: Bearer <JWT>"
+```
+
+### Get Aggregated XP (Tasks + Challenges)
+```bash
+curl "http://127.0.0.1:8000/xp/get_xp" -H "Authorization: Bearer <JWT>"
+```
+
+---
