@@ -47,7 +47,7 @@ class DailyPack(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
-    user: Mapped[AppUser] = relationship(backref="daily_packs")
+    user: Mapped[AppUser] = relationship(backref="daily_pack")
 
     items: Mapped[List["DailyPackItem"]]= relationship(
         "DailyPackItem",
@@ -124,7 +124,7 @@ class MonthlyPack(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
-    user: Mapped[AppUser] = relationship(backref="monthly_packs")
+    user: Mapped[AppUser] = relationship(backref="monthly_pack")
 
     items: Mapped[List["MonthlyPackItem"]] = relationship(
         "MonthlyPackItem",

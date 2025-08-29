@@ -5,21 +5,21 @@ import hashlib
 import hmac
 import os
 from datetime import date, datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Any
 
 import requests
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Header
-from fastapi import Body
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import Request
 from pydantic import BaseModel, HttpUrl
-from sqlalchemy import func, and_, or_, select, update, delete
+from sqlalchemy import func, ColumnElement
+from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
 from db import get_session  # your dependency that returns a sync Session
 from models.challenge import Challenge
-from models.user import AppUser
+from models.pack import DailyPack, DailyPackItem, MonthlyPack, MonthlyPackItem
 from models.user_challenge import UserChallenge
 from models.xp_ledger import XpLedger
-from models.pack import DailyPack, DailyPackItem, MonthlyPack, MonthlyPackItem
 
 router = APIRouter()
 
@@ -103,12 +103,11 @@ def _finish_verify(db: Session, uc: UserChallenge, digest_hex: str, verifier: st
     db.add(xp)
     db.flush()
 
-
 def _verify_link(url: str) -> bool:
     try:
         # Fast and light: HEAD first, fallback to GET for providers that block HEAD
         r = requests.head(url, timeout=8, allow_redirects=True)
-        if r.status_code >= 200 and r.status_code < 400:
+        if 200 <= r.status_code < 400:
             return True
         r = requests.get(url, timeout=10, allow_redirects=True)
         return 200 <= r.status_code < 400
@@ -123,7 +122,7 @@ def _sha256_bytes(data: bytes) -> str:
 
 
 # ---------- selection rater ----------
-def _completed_challenge_ids(db: Session, user_id: str) -> set[int]:
+def _completed_challenge_ids(db: Session, user_id: int) -> set[ColumnElement[Any]]:
     rows = (
         db.query(UserChallenge.challenge_id)
         .filter(UserChallenge.user_id == user_id, UserChallenge.status == "verified")
@@ -132,7 +131,7 @@ def _completed_challenge_ids(db: Session, user_id: str) -> set[int]:
     return {r[0] for r in rows}
 
 
-def _existing_pack_challenge_ids(db: Session, user_id: str, cadence: str, day: date) -> set[int]:
+def _existing_pack_challenge_ids(db: Session, user_id: int, cadence: str, day: date) -> set[int]:
     if cadence == "daily":
         pack = (
             db.query(DailyPack)
@@ -166,7 +165,7 @@ def _existing_pack_challenge_ids(db: Session, user_id: str, cadence: str, day: d
     return {r[0] for r in ch_ids}
 
 
-def _pick_challenges(db: Session, user_id: str, cadence: str, target_count: int, day: date) -> list[Challenge]:
+def _pick_challenges(db: Session, user_id: int, cadence: str, target_count: int, day: date) -> list[Challenge]:
     """Pick active challenges for cadence, excluding all historically verified + already in pack."""
     completed = _completed_challenge_ids(db, user_id)
     existing = _existing_pack_challenge_ids(db, user_id, cadence, day)
@@ -185,7 +184,7 @@ def _pick_challenges(db: Session, user_id: str, cadence: str, target_count: int,
     return q.all()
 
 
-def _ensure_daily_pack(db: Session, user_id: str, day: date, pack_size: int = DAILY_PACK_SIZE) -> DailyPack:
+def _ensure_daily_pack(db: Session, user_id: int, day: date, pack_size: int = DAILY_PACK_SIZE) -> DailyPack:
     pack = (
         db.query(DailyPack)
         .options(joinedload(DailyPack.items))
@@ -213,8 +212,6 @@ def _ensure_daily_pack(db: Session, user_id: str, day: date, pack_size: int = DA
                 status="assigned",
                 progress_pct=0,
                 personalized_xp=ch.base_xp,
-                priority_score=None,
-                reason_json=None,
                 due_at=datetime.combine(day, datetime.max.time()).replace(tzinfo=None),
             )
             db.add(uc)
@@ -223,7 +220,7 @@ def _ensure_daily_pack(db: Session, user_id: str, day: date, pack_size: int = DA
     return pack
 
 
-def _ensure_monthly_pack(db: Session, user_id: str, ref_day: date, pack_size: int = MONTHLY_PACK_SIZE) -> MonthlyPack:
+def _ensure_monthly_pack(db: Session, user_id: int, ref_day: date, pack_size: int = MONTHLY_PACK_SIZE) -> MonthlyPack:
     mstart, mend = month_bounds(ref_day)
     pack = (
         db.query(MonthlyPack)
@@ -250,8 +247,6 @@ def _ensure_monthly_pack(db: Session, user_id: str, ref_day: date, pack_size: in
                 status="assigned",
                 progress_pct=0,
                 personalized_xp=ch.base_xp,
-                priority_score=None,
-                reason_json=None,
                 due_at=datetime.combine(mend, datetime.max.time()).replace(tzinfo=None),
             )
             db.add(uc)
@@ -260,14 +255,33 @@ def _ensure_monthly_pack(db: Session, user_id: str, ref_day: date, pack_size: in
     return pack
 
 
+def get_users_challenges_xp(db : Session,user_id : int) -> int:
+    return  db.execute(
+    text("SELECT challenges_schema.get_user_total_xp(:uid) AS total_xp"),
+    {"uid": user_id},
+).scalar_one()  # function always returns a row; COALESCE inside returns 0 if none
+
 # ---------- endpoints ----------
+
+@router.get("/get_challenges_xp")
+def get_my_total_xp(
+    request: Request,
+    db: Session = Depends(get_session),
+):
+    # user id is placed on request.state by your auth middleware
+    user_id = int( getattr(request.state, "user_id", None))
+
+    # Call the DB function: SELECT get_user_total_xp(:uid)
+    total_xp = get_users_challenges_xp(db,user_id)
+
+    return {"user_id": user_id, "total_xp": int(total_xp)}
 
 @router.get("/get_daily", response_model=List[UCOut])
 def get_daily_active(
     request: Request,
     db: Session = Depends(get_session),
 ):
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     day = today_utc()
     pack = _ensure_daily_pack(db, user_id, day, DAILY_PACK_SIZE)
     db.commit()
@@ -311,7 +325,7 @@ def get_monthly_active(
     request: Request,
     db: Session = Depends(get_session),
 ):
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     day = today_utc()
     pack = _ensure_monthly_pack(db, user_id, day, MONTHLY_PACK_SIZE)
     db.commit()
@@ -348,6 +362,29 @@ def get_monthly_active(
         )
     return out
 
+@router.post("/start_challenge/{uc_id}")
+def start_challenge(uc_id: int,    request: Request,
+    db: Session = Depends(get_session)
+):
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
+    uc = (
+        db.query(UserChallenge)
+        .filter(UserChallenge.id == uc_id, UserChallenge.user_id == user_id)
+        .first()
+    )
+    if not uc:
+        raise HTTPException(status_code=404, detail="UserChallenge not found")
+
+    if uc.status != "assigned":
+        return {"error": "Challenge cannot be started","status":uc.status}
+
+    if uc.started_at is  None:
+        uc.started_at = datetime.utcnow()
+        db.flush()
+        db.commit()
+        return {"uc_id": uc_id, "started": True}
+    else:
+        return {"error": "Challenge already started"}
 
 # ---- verification endpoints ----
 @router.post("/verify/text/{uc_id}")
@@ -357,7 +394,7 @@ def verify_text(
     request: Request,
     db: Session = Depends(get_session),
 ):
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     uc = (
         db.query(UserChallenge)
         .filter(UserChallenge.id == uc_id, UserChallenge.user_id == user_id)
@@ -383,7 +420,7 @@ def verify_link(
     request: Request,
     db: Session = Depends(get_session),
 ):
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int (getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     uc = (
         db.query(UserChallenge)
         .filter(UserChallenge.id == uc_id, UserChallenge.user_id == user_id)
@@ -412,7 +449,7 @@ def verify_photo(
     """
     Lightweight: read bytes, hash; optional EXIF timestamp check (Pillow).
     """
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     uc = (
         db.query(UserChallenge)
         .filter(UserChallenge.id == uc_id, UserChallenge.user_id == user_id)
@@ -456,7 +493,7 @@ def replace_challenge(
     request: Request,
     db: Session = Depends(get_session),
 ):
-    user_id = getattr(request.state, "user_id", None)  # set by middleware after JWT checks
+    user_id = int(getattr(request.state, "user_id", None))  # set by middleware after JWT checks
     uc = (
         db.query(UserChallenge)
         .options(joinedload(UserChallenge.challenge))

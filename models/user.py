@@ -11,7 +11,8 @@ from .base import Base
 #   __tablename__ = "user"
 #   __table_args__ = {"schema": "auth"}
 class AppUser(Base):
-    __tablename__ = "public.users_auth"
+    __tablename__ = "users_auth"
+    __table_args__ = {"schema": "public"}
 
     # Keep attribute name `id` to avoid refactors; map it to the DB column `user_id` (INTEGER PK).
     id: Mapped[int] = mapped_column("user_id", Integer, primary_key=True)
