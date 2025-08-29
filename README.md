@@ -663,7 +663,7 @@ Make sure your Pydantic configuration uses `model_config = ConfigDict(from_attri
 
 ---
 
-# Tasks & Challenges XP API
+# Tasks & XP API
 
 ## Sample Requests
 
