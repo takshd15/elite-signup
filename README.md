@@ -582,6 +582,9 @@ curl -X POST -H "Authorization: Bearer <JWT>" \
 curl -X POST -H "Authorization: Bearer <JWT>" \
   https://api.example.com/v1/challenges/refresh/monthly
 
+# Tasks & XP API
+
+
 ## Endpoints Overview
 
 ### Aggregated XP
@@ -662,9 +665,6 @@ Fields returned by `TaskOut` include:
 Make sure your Pydantic configuration uses `model_config = ConfigDict(from_attributes=True)` so ORM rows serialize correctly.
 
 ---
-
-# Tasks & XP API
-
 ## Sample Requests
 
 Assuming the app runs on `http://127.0.0.1:8000` and your auth middleware injects `user_id`:
