@@ -1,1 +1,1 @@
-web: node production-server-no-redis.js
+web: node cluster-server.js

@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS private_messages (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance
+-- Create comprehensive indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_private_messages_conversation_id ON private_messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_private_messages_sender_id ON private_messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_private_messages_recipient_id ON private_messages(recipient_id);
@@ -34,6 +34,12 @@ CREATE INDEX IF NOT EXISTS idx_private_messages_reply_to ON private_messages(rep
 CREATE INDEX IF NOT EXISTS idx_private_messages_is_edited ON private_messages(is_edited);
 CREATE INDEX IF NOT EXISTS idx_private_messages_is_deleted ON private_messages(is_deleted);
 CREATE INDEX IF NOT EXISTS idx_private_messages_deleted_for_everyone ON private_messages(deleted_for_everyone);
+CREATE INDEX IF NOT EXISTS idx_private_messages_message_id ON private_messages(message_id);
+
+-- Additional performance indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_private_messages_conv_created ON private_messages(conversation_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_private_messages_sender_created ON private_messages(sender_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_private_messages_recipient_created ON private_messages(recipient_id, created_at DESC);
 
 -- Conversations table - tracks conversation metadata
 CREATE TABLE IF NOT EXISTS conversations (
@@ -151,3 +157,44 @@ VALUES
     ('user-2', false, NOW() - INTERVAL '30 minutes'),
     ('123', false, NOW() - INTERVAL '2 hours')
 ON CONFLICT (user_id) DO NOTHING;
+
+-- Additional indexes for backend tables (Java backend integration)
+-- These indexes optimize JWT verification and user lookups
+
+-- Index for user authentication (JWT verification)
+CREATE INDEX IF NOT EXISTS idx_users_auth_user_id ON users_auth(user_id);
+CREATE INDEX IF NOT EXISTS idx_users_auth_username ON users_auth(username);
+CREATE INDEX IF NOT EXISTS idx_users_auth_email ON users_auth(email);
+
+-- Index for JWT revocation (token validation)
+CREATE INDEX IF NOT EXISTS idx_jwt_revocation_jti ON jwt_revocation(jti);
+CREATE INDEX IF NOT EXISTS idx_jwt_revocation_revoked_at ON jwt_revocation(revoked_at);
+
+-- Index for user profile info
+CREATE INDEX IF NOT EXISTS idx_user_profile_info_user_id ON user_profile_info(user_id_serial);
+
+-- Index for chat users (fallback table)
+CREATE INDEX IF NOT EXISTS idx_chat_users_user_id ON chat_users(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_users_username ON chat_users(username);
+
+-- Table for tracking conversation deletions per user
+CREATE TABLE IF NOT EXISTS conversation_deletions (
+    conversation_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (conversation_id, user_id),
+    FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users_auth(user_id) ON DELETE CASCADE
+);
+
+-- Performance optimization: Update table statistics
+ANALYZE users_auth;
+ANALYZE jwt_revocation;
+ANALYZE user_profile_info;
+ANALYZE private_messages;
+ANALYZE conversations;
+ANALYZE message_reactions;
+ANALYZE message_deletions;
+ANALYZE conversation_deletions;
+ANALYZE user_status;
+ANALYZE chat_users;

@@ -2,11 +2,13 @@
   "name": "elitescore-chat-server",
   "version": "1.0.0",
   "description": "WebSocket chat server for EliteScore application",
-  "main": "production-server-no-redis.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node production-server-no-redis.js",
-    "dev": "nodemon production-server-no-redis.js",
-    "test": "node test-private-messaging.js",
+    "start": "node cluster-server.js",
+    "start:single": "node server.js",
+    "start:production": "node cluster-server.js",
+    "dev": "nodemon server.js",
+    "test": "node test-chat-core-features.js",
     "health": "curl http://localhost:3001/health",
     "metrics": "curl http://localhost:3001/metrics"
   },

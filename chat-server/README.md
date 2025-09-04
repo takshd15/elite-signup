@@ -26,16 +26,16 @@ This is a **JWT-verified chat microservice** that operates independently but use
 ## 📁 **Core Files**
 
 ### **Main Server**
-- `production-server-no-redis.js` - **JWT-verified chat server** (1301 lines)
+- `server.js` - **Main chat server** (195 lines)
+- `cluster-server.js` - **Production clustering** (72 lines)
 - `package.json` - Dependencies including `jsonwebtoken`, `pg`, `ws`
-- `enhanced_chat_tables.sql` - Chat database schema
+- `private_messaging_tables.sql` - Chat database schema
 
 ### **Testing**
-- `simple-test.js` - Basic functionality test
-- `test-complete-functionality.js` - Comprehensive test suite
-- `generate-jwt-tokens.js` - **Generate fresh JWT tokens for testing**
-- `comprehensive-production-test.js` - Full production test suite
-- `test-enhanced-features.js` - Advanced features testing
+- `test-chat-core-features.js` - Core functionality test
+- `simple-auth-test.js` - Authentication testing
+- `ultimate-comprehensive-test.js` - Comprehensive test suite
+- `test-jwt-tokens.json` - JWT tokens for testing
 
 ---
 
@@ -47,67 +47,65 @@ cd chat-server
 npm install
 ```
 
-### **2. Generate Fresh JWT Tokens (IMPORTANT!)**
-**⚠️ CRITICAL: You MUST generate fresh JWT tokens before testing, or the chat server won't work!**
-
-The included test tokens in `test-jwt-tokens.json` are **expired by default**. To generate fresh tokens:
-
+### **2. Environment Configuration**
 ```bash
-# Generate new JWT tokens with 24-hour expiration
-node generate-jwt-tokens.js
-```
+# Copy environment template
+cp env.example .env
 
-**Expected Output:**
-```
-🔑 Generating fresh JWT tokens for testing...
-✅ Generated fresh JWT tokens:
-   - Valid tokens: 3
-   - Revoked token: 1
-   - Expiration: 2025-01-26T23:01:10.524Z
-📄 Tokens saved to: test-jwt-tokens.json
-
-🔍 Verifying tokens...
-✅ Token 1 is valid: user1
-✅ Token 2 is valid: user2
-✅ Token 3 is valid: user3
-```
-
-**Why This Is Required:**
-- JWT tokens have expiration times (24 hours by default)
-- Expired tokens cause authentication failures
-- The chat server requires valid tokens for all operations
-- Fresh tokens ensure tests and manual testing work properly
-
-### **3. Environment Variables (Optional)**
-```bash
-# Database (defaults to AWS RDS)
-DB_HOST=your-db-host
-DB_PORT=5432
-DB_NAME=your-db-name
-DB_USER=your-db-user
-DB_PASS=your-db-password
-
-# Server Port (default: 3001)
-PORT=3001
+# Update .env with your database credentials
+# The file already contains AWS RDS configuration
 ```
 
 ### **3. Start Chat Server**
 ```bash
-node production-server-no-redis.js
+# Development
+node server.js
+
+# Production
+node cluster-server.js
 ```
 
 **Expected Output:**
 ```
-🚀 Production chat server running on port 3001
-info: Production chat server running on port 3001
+🚀 Enhanced private messaging server running on port 3001
+info: Enhanced private messaging server running on port 3001
 info: Database connected successfully
 info: Chat tables setup completed
 ```
 
 ### **4. Test Functionality**
 ```bash
-node test-complete-functionality.js
+node test-chat-core-features.js
 ```
+
+---
+
+## 🚀 **Deployment**
+
+### **Heroku Deployment (Recommended)**
+```bash
+# 1. Install Heroku CLI
+# 2. Login to Heroku
+heroku login
+
+# 3. Create app
+heroku create your-chat-app
+
+# 4. Set environment variables
+heroku config:set NODE_ENV=production
+heroku config:set DB_HOST=cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com
+heroku config:set DB_USER=u2eb6vlhflq6bt
+heroku config:set DB_PASS=pe9512a0cbf2bc2eee176022c82836beedc48733196d06484e5dc69e2754f5a79
+heroku config:set JWT_SECRET=12341234123412341234123412341234123412341234
+
+# 5. Deploy
+git push heroku main
+```
+
+### **Other Deployment Options**
+- **Railway**: Connect GitHub repo, auto-deploy
+- **Render**: Connect GitHub repo, set environment variables
+- **AWS EC2**: Deploy to same region as RDS for best performance
 
 ---
 
