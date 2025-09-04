@@ -7,7 +7,7 @@ const { checkMessageModeration } = require('../security/contentModeration');
 const { getRedisClient, isRedisConnected } = require('../config/redis');
 
 // Performance configuration from environment
-const MAX_CONNECTIONS_PER_IP = parseInt(process.env.MAX_CONNECTIONS_PER_IP) || 10;
+const MAX_CONNECTIONS_PER_IP = parseInt(process.env.MAX_CONNECTIONS_PER_IP) || 1000;
 const MESSAGE_RATE_LIMIT = parseInt(process.env.MESSAGE_RATE_LIMIT) || 30;
 const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT) || 30000;
 

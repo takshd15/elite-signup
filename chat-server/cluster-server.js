@@ -15,7 +15,7 @@ if (cluster.isMaster) {
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'production'}`);
   
   // Fork workers based on CPU cores (but limit to 1 for development)
-  const numWorkers = process.env.NODE_ENV === 'production' ? Math.min(numCPUs, 4) : 1;
+  const numWorkers = process.env.NODE_ENV === 'production' ? Math.min(numCPUs, 8) : 1;
   console.log(`👥 Starting ${numWorkers} worker processes...`);
   
   for (let i = 0; i < numWorkers; i++) {

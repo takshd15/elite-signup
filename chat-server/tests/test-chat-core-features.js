@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
-const { verifyJWTWithBackend } = require('./security/jwtUtils');
+const path = require('path');
+const { verifyJWTWithBackend } = require('../security/jwtUtils');
 
 // Database connection
 const dbPool = new Pool({
@@ -12,7 +13,7 @@ const dbPool = new Pool({
 });
 
 // Load test JWT tokens
-const testTokens = JSON.parse(require('fs').readFileSync('./test-jwt-tokens.json', 'utf8'));
+const testTokens = JSON.parse(require('fs').readFileSync(path.join(__dirname, 'test-jwt-tokens.json'), 'utf8'));
 
 console.log('🚀 Testing Core Chat Features');
 console.log('=============================\n');
