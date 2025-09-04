@@ -33,7 +33,7 @@ This is a **JWT-verified chat microservice** that operates independently but use
 
 ### **Testing**
 - `test-chat-core-features.js` - Core functionality test
-- `simple-auth-test.js` - Authentication testing
+- `test-server-startup.js` - Server startup and Redis connection test
 - `ultimate-comprehensive-test.js` - Comprehensive test suite
 - `test-jwt-tokens.json` - JWT tokens for testing
 
@@ -54,6 +54,7 @@ cp env.example .env
 
 # Update .env with your database credentials
 # The file already contains AWS RDS configuration
+# Redis is configured for development (uses Redis Mock for speed)
 ```
 
 ### **3. Start Chat Server**
@@ -75,8 +76,35 @@ info: Chat tables setup completed
 
 ### **4. Test Functionality**
 ```bash
+# Test core features
 node test-chat-core-features.js
+
+# Test server startup and Redis
+node test-server-startup.js
+
+# Run comprehensive test suite
+node ultimate-comprehensive-test.js
 ```
+
+---
+
+## 🔴 **Redis Configuration**
+
+### **Development Mode**
+- **Redis Mock**: Fast in-memory Redis simulation for development
+- **No Installation Required**: Works out of the box
+- **High Performance**: Optimized for development speed
+
+### **Production Mode**
+- **Real Redis**: Uses Heroku Redis addon in production
+- **Automatic Detection**: Server detects production environment
+- **Graceful Fallback**: Continues in database-only mode if Redis fails
+
+### **Redis Features**
+- **Session Persistence**: User sessions survive app restarts
+- **Message Caching**: Faster message retrieval
+- **Rate Limiting**: Distributed rate limiting across dynos
+- **Real-time Features**: Enhanced typing indicators and presence
 
 ---
 
@@ -84,23 +112,23 @@ node test-chat-core-features.js
 
 ### **Heroku Deployment (Recommended)**
 ```bash
-# 1. Install Heroku CLI
-# 2. Login to Heroku
+# Automated deployment (Windows)
+deploy-heroku.bat
+
+# Automated deployment (Linux/Mac)
+./deploy-heroku.sh
+
+# Manual deployment
 heroku login
-
-# 3. Create app
 heroku create your-chat-app
-
-# 4. Set environment variables
+heroku addons:create heroku-postgresql:mini
+heroku addons:create heroku-redis:mini
 heroku config:set NODE_ENV=production
-heroku config:set DB_HOST=cd6emofiekhlj.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com
-heroku config:set DB_USER=u2eb6vlhflq6bt
-heroku config:set DB_PASS=pe9512a0cbf2bc2eee176022c82836beedc48733196d06484e5dc69e2754f5a79
-heroku config:set JWT_SECRET=12341234123412341234123412341234123412341234
-
-# 5. Deploy
+heroku config:set JWT_SECRET=your-secret-here
 git push heroku main
 ```
+
+**See `DEPLOYMENT.md` for detailed deployment instructions.**
 
 ### **Other Deployment Options**
 - **Railway**: Connect GitHub repo, auto-deploy
@@ -224,21 +252,21 @@ git push heroku main
 
 ## 🧪 **Testing**
 
-### **⚠️ IMPORTANT: Generate Fresh Tokens First!**
-Before running any tests, **always generate fresh JWT tokens**:
+### **Available Test Files**
+- `test-chat-core-features.js` - Core functionality test
+- `test-server-startup.js` - Server startup and Redis connection test
+- `ultimate-comprehensive-test.js` - Comprehensive test suite
 
+### **Run Tests**
 ```bash
-# Generate fresh tokens (required for all tests)
-node generate-jwt-tokens.js
+# Test core features
+node test-chat-core-features.js
 
-# Then run tests
-node test-complete-functionality.js
-```
+# Test server startup and Redis
+node test-server-startup.js
 
-### **Run Complete Test Suite**
-```bash
-# Make sure you have fresh tokens first!
-node test-complete-functionality.js
+# Run comprehensive test suite
+node ultimate-comprehensive-test.js
 ```
 
 **Tests Include:**
@@ -247,13 +275,8 @@ node test-complete-functionality.js
 - ✅ Message sending
 - ✅ Reply functionality
 - ✅ Reaction system
+- ✅ Redis connection and fallback
 - ✅ Error handling
-
-### **Available Test Files**
-- `comprehensive-production-test.js` - Full production server test suite
-- `test-enhanced-features.js` - Advanced features (reactions, editing, deletion)
-- `test-production-message-features.js` - Production message features test
-- `simple-connection-test.js` - Basic connectivity test
 
 ### **Manual Testing**
 ```bash
@@ -323,21 +346,24 @@ taskkill /F /IM node.exe
 
 **JWT verification fails:**
 ```bash
-# Generate fresh JWT tokens (most common issue)
-node generate-jwt-tokens.js
-
 # Verify JWT secret matches Java backend
 # Check database tables exist
 # Ensure verification codes are valid
+# Check token expiration
+```
+
+**Redis connection issues:**
+```bash
+# Development: Redis Mock should work automatically
+# Production: Check Heroku Redis addon is provisioned
+# Check REDIS_URL environment variable
 ```
 
 **Authentication errors in tests:**
 ```bash
-# Always generate fresh tokens before testing
-node generate-jwt-tokens.js
-
 # Check token expiration
 # Verify server is running on port 3001
+# Run test-server-startup.js to check Redis
 ```
 
 ---

@@ -8,6 +8,7 @@ const os = require('os');
 
 // Import modularized components
 const { dbPool, dbConnected, initializeDatabase, getDbConnected } = require('./config/database');
+const { initializeRedis, isRedisConnected, closeRedis } = require('./config/redis');
 const RateLimiter = require('./security/rateLimiter');
 const { setupHttpEndpoints } = require('./handlers/httpEndpoints');
 const { handleWebSocketConnection } = require('./handlers/connectionHandler');
@@ -50,8 +51,8 @@ const wss = new WebSocket.Server({
   perMessageDeflate: {
     zlibDeflateOptions: {
       chunkSize: 1024,
-      memLevel: 7,
-      level: 3
+      memLevel: 3,        // Reduced from 7 to 3 (less memory usage)
+      level: 1            // Reduced from 3 to 1 (faster compression)
     },
     zlibInflateOptions: {
       chunkSize: 10 * 1024
@@ -60,7 +61,7 @@ const wss = new WebSocket.Server({
     serverNoContextTakeover: true,
     serverMaxWindowBits: 10,
     concurrencyLimit: 10,
-    threshold: 1024
+    threshold: 512        // Reduced from 1024 to 512 (compress smaller messages)
   },
   maxPayload: MAX_PAYLOAD_SIZE // 1MB max message size
 });
@@ -88,16 +89,31 @@ const metrics = {
   rateLimitHits: 0
 };
 
-// Initialize database
-initializeDatabase().then(success => {
-  if (success) {
-    logger.info('Database initialized successfully');
-  } else {
-    logger.warn('Database initialization failed, using fallback mode');
+// Initialize database and Redis
+async function initializeServices() {
+  try {
+    // Initialize database
+    const dbSuccess = await initializeDatabase();
+    if (dbSuccess) {
+      logger.info('✅ Database initialized successfully');
+    } else {
+      logger.warn('⚠️ Database initialization failed, using fallback mode');
+    }
+    
+    // Initialize Redis
+    const redisSuccess = await initializeRedis();
+    if (redisSuccess) {
+      logger.info('✅ Redis initialized successfully');
+    } else {
+      logger.warn('⚠️ Redis initialization failed, using database-only mode');
+    }
+  } catch (error) {
+    logger.error('Service initialization error:', error.message);
   }
-}).catch(err => {
-  logger.warn('Database initialization error, using fallback mode:', err.message);
-});
+}
+
+// Start services
+initializeServices();
 
 // Setup HTTP endpoints with function to get current database status
 setupHttpEndpoints(server, wss, dbPool, getDbConnected, metrics);
@@ -150,7 +166,7 @@ setInterval(() => {
   const memUsage = process.memoryUsage();
   logger.info(`Memory cleanup completed. RSS: ${Math.round(memUsage.rss / 1024 / 1024)}MB, Heap: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
   
-}, 60000); // Clean up every minute
+}, 30000); // Clean up every 30 seconds (faster cleanup)
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
@@ -161,6 +177,7 @@ process.on('SIGTERM', async () => {
   });
   
   await dbPool.end();
+  await closeRedis();
   
   server.close(() => {
     logger.info('Server closed');
@@ -176,6 +193,7 @@ process.on('SIGINT', async () => {
   });
   
   await dbPool.end();
+  await closeRedis();
   
   server.close(() => {
     logger.info('Server closed');

@@ -1,0 +1,125 @@
+{
+  "name": "Elite Chat Server",
+  "description": "Enhanced private messaging server with Redis caching and real-time features",
+  "repository": "https://github.com/your-username/elite-signup",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": [
+    "node",
+    "websocket",
+    "chat",
+    "messaging",
+    "redis",
+    "real-time"
+  ],
+  "stack": "heroku-22",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "as": "DATABASE"
+    },
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node.js environment",
+      "value": "production"
+    },
+    "PORT": {
+      "description": "Port for the web server",
+      "value": "3001"
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token signing",
+      "generator": "secret"
+    },
+    "CHAT_ENCRYPTION_KEY": {
+      "description": "Encryption key for chat messages",
+      "generator": "secret"
+    },
+    "RATE_LIMIT_WINDOW_MS": {
+      "description": "Rate limiting window in milliseconds",
+      "value": "900000"
+    },
+    "RATE_LIMIT_MAX_REQUESTS": {
+      "description": "Maximum requests per rate limit window",
+      "value": "100"
+    },
+    "MESSAGE_RATE_LIMIT": {
+      "description": "Messages per minute per user",
+      "value": "30"
+    },
+    "MAX_CONNECTIONS_PER_IP": {
+      "description": "Maximum connections per IP address",
+      "value": "10"
+    },
+    "CONNECTION_TIMEOUT": {
+      "description": "Connection timeout in milliseconds",
+      "value": "30000"
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level",
+      "value": "info"
+    },
+    "HEALTH_CHECK_INTERVAL": {
+      "description": "Health check interval in milliseconds",
+      "value": "30000"
+    },
+    "HEALTH_CHECK_TIMEOUT": {
+      "description": "Health check timeout in milliseconds",
+      "value": "5000"
+    },
+    "MAX_PAYLOAD_SIZE": {
+      "description": "Maximum payload size in bytes",
+      "value": "1048576"
+    },
+    "KEEP_ALIVE_TIMEOUT": {
+      "description": "Keep alive timeout in milliseconds",
+      "value": "60000"
+    },
+    "MAX_CONNECTIONS": {
+      "description": "Maximum total connections",
+      "value": "10000"
+    },
+    "DB_MAX_CONNECTIONS": {
+      "description": "Maximum database connections",
+      "value": "500"
+    },
+    "DB_MIN_CONNECTIONS": {
+      "description": "Minimum database connections",
+      "value": "50"
+    },
+    "DB_IDLE_TIMEOUT": {
+      "description": "Database idle timeout in milliseconds",
+      "value": "10000"
+    },
+    "DB_CONNECTION_TIMEOUT": {
+      "description": "Database connection timeout in milliseconds",
+      "value": "1000"
+    },
+    "DB_STATEMENT_TIMEOUT": {
+      "description": "Database statement timeout in milliseconds",
+      "value": "10000"
+    }
+  },
+  "scripts": {
+    "postdeploy": "node -e \"console.log('🚀 Elite Chat Server deployed successfully!')\""
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

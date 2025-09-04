@@ -3,6 +3,7 @@ const { verifyJWTWithBackend } = require('../security/jwtUtils');
 const { savePrivateMessageToDatabase, loadPrivateMessagesFromDatabase } = require('../database/messageOperations');
 const { checkMessageModeration } = require('../security/contentModeration');
 const InputValidator = require('../security/inputValidator');
+const { getRedisClient, isRedisConnected } = require('../config/redis');
 
 // Generate conversation ID for two users
 function generateConversationId(userId1, userId2) {
@@ -76,6 +77,25 @@ async function handleAuthentication(ws, data, clientId, clients, userConnections
   if (existingClient) {
     existingClient.user = user;
     existingClient.lastActivity = Date.now();
+    
+    // Update Redis session with user data
+    if (isRedisConnected()) {
+      try {
+        const redisClient = getRedisClient();
+        await redisClient.setEx(`session:${clientId}`, 3600, JSON.stringify({
+          clientIp: existingClient.clientIp,
+          lastActivity: existingClient.lastActivity,
+          connected: true,
+          messageCount: existingClient.messageCount || 0,
+          user: user
+        }));
+        
+        // Also store user session mapping
+        await redisClient.setEx(`user_session:${user.userId}`, 3600, clientId);
+      } catch (redisError) {
+        console.warn('Failed to update user session in Redis:', redisError.message);
+      }
+    }
   }
   
   // Store session in memory
@@ -100,7 +120,7 @@ async function handleAuthentication(ws, data, clientId, clients, userConnections
   }, clientId, clients, metrics);
   
   ws.send(JSON.stringify({
-    type: 'authenticated',
+    type: 'auth_success',
     user: {
       id: user.userId,
       username: user.username,

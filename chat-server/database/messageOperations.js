@@ -1,4 +1,5 @@
 const { encryptMessage, decryptMessage } = require('../security/encryption');
+const { getRedisClient, isRedisConnected } = require('../config/redis');
 
 // Save private message to database with encryption
 async function savePrivateMessageToDatabase(message, dbPool) {
@@ -24,6 +25,18 @@ async function savePrivateMessageToDatabase(message, dbPool) {
       ]);
       
       console.log(`Encrypted private message saved to database: ${message.id}`);
+      
+      // Cache message in Redis
+      if (isRedisConnected()) {
+        try {
+          const redisClient = getRedisClient();
+          await redisClient.setEx(`message:${message.id}`, 3600, JSON.stringify(message));
+          await redisClient.lPush(`conversation:${message.conversationId}`, JSON.stringify(message));
+          await redisClient.lTrim(`conversation:${message.conversationId}`, 0, 99); // Keep last 100 messages
+        } catch (redisError) {
+          console.warn('Redis caching failed:', redisError.message);
+        }
+      }
     } else {
       // Fallback to unencrypted if encryption fails
       await dbPool.query(`
@@ -32,6 +45,18 @@ async function savePrivateMessageToDatabase(message, dbPool) {
       `, [message.id, message.conversationId, message.senderId, message.recipientId, message.content, false, false, message.replyTo || null]);
       
       console.warn(`Unencrypted private message saved to database (encryption failed): ${message.id}`);
+      
+      // Cache message in Redis (even if unencrypted)
+      if (isRedisConnected()) {
+        try {
+          const redisClient = getRedisClient();
+          await redisClient.setEx(`message:${message.id}`, 3600, JSON.stringify(message));
+          await redisClient.lPush(`conversation:${message.conversationId}`, JSON.stringify(message));
+          await redisClient.lTrim(`conversation:${message.conversationId}`, 0, 99);
+        } catch (redisError) {
+          console.warn('Redis caching failed:', redisError.message);
+        }
+      }
     }
   } catch (error) {
     console.error('Error saving private message to database:', error);
@@ -41,6 +66,22 @@ async function savePrivateMessageToDatabase(message, dbPool) {
 // Load private messages from database with decryption
 async function loadPrivateMessagesFromDatabase(conversationId, dbPool, limit = 50) {
   try {
+    // Try to get messages from Redis cache first
+    if (isRedisConnected()) {
+      try {
+        const redisClient = getRedisClient();
+        const cachedMessages = await redisClient.lRange(`conversation:${conversationId}`, 0, limit - 1);
+        
+        if (cachedMessages && cachedMessages.length > 0) {
+          console.log(`Loaded ${cachedMessages.length} messages from Redis cache for conversation ${conversationId}`);
+          return cachedMessages.map(msg => JSON.parse(msg));
+        }
+      } catch (redisError) {
+        console.warn('Redis cache read failed, falling back to database:', redisError.message);
+      }
+    }
+    
+    // Fallback to database if Redis cache miss
     const result = await dbPool.query(`
       SELECT 
         pm.message_id as id, 

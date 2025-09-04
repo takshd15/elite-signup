@@ -11,8 +11,8 @@ const dbPool = new Pool({
     rejectUnauthorized: false
   },
   // Connection pool settings - optimized for high concurrency
-  max: parseInt(process.env.DB_MAX_CONNECTIONS) || 200, // Increased from 50 to 200 (4x improvement)
-  min: parseInt(process.env.DB_MIN_CONNECTIONS) || 10,  // Increased from 5 to 10 (2x improvement)
+  max: parseInt(process.env.DB_MAX_CONNECTIONS) || 500, // Increased from 200 to 500 (2.5x improvement)
+  min: parseInt(process.env.DB_MIN_CONNECTIONS) || 50,  // Increased from 10 to 50 (5x improvement)
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT) || 30000,
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT) || 2000,
   maxUses: parseInt(process.env.DB_MAX_USES) || 7500,

@@ -4,6 +4,7 @@ const { broadcastToAll } = require('./messageHandlers');
 const SecurityUtils = require('../security/securityUtils');
 const InputValidator = require('../security/inputValidator');
 const { checkMessageModeration } = require('../security/contentModeration');
+const { getRedisClient, isRedisConnected } = require('../config/redis');
 
 // Performance configuration from environment
 const MAX_CONNECTIONS_PER_IP = parseInt(process.env.MAX_CONNECTIONS_PER_IP) || 10;
@@ -49,7 +50,7 @@ function checkRateLimit(userId, clientId, messageRateLimit, metrics) {
   return true;
 }
 
-function handleWebSocketConnection(ws, req, clients, userConnections, conversations, ipConnections, messageRateLimit, sessions, metrics, rateLimiter) {
+async function handleWebSocketConnection(ws, req, clients, userConnections, conversations, ipConnections, messageRateLimit, sessions, metrics, rateLimiter) {
   const clientId = crypto.randomUUID();
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   
@@ -78,11 +79,27 @@ function handleWebSocketConnection(ws, req, clients, userConnections, conversati
   metrics.connections++;
   
   // Store initial client information with IP
-  clients.set(clientId, {
+  const clientData = {
     ws,
     clientIp,
     lastActivity: Date.now()
-  });
+  };
+  
+  clients.set(clientId, clientData);
+  
+  // Store session in Redis for distributed access
+  if (isRedisConnected()) {
+    try {
+      const redisClient = getRedisClient();
+      await redisClient.setEx(`session:${clientId}`, 3600, JSON.stringify({
+        clientIp,
+        lastActivity: Date.now(),
+        connected: true
+      }));
+    } catch (redisError) {
+      console.warn('Failed to store session in Redis:', redisError.message);
+    }
+  }
   
   // Set connection timeout
   const connectionTimeout = setTimeout(() => {
@@ -117,6 +134,22 @@ function handleWebSocketConnection(ws, req, clients, userConnections, conversati
       if (currentClient) {
         currentClient.lastActivity = Date.now();
         currentClient.messageCount = (currentClient.messageCount || 0) + 1;
+        
+        // Update Redis session
+        if (isRedisConnected()) {
+          try {
+            const redisClient = getRedisClient();
+            await redisClient.setEx(`session:${clientId}`, 3600, JSON.stringify({
+              clientIp: currentClient.clientIp,
+              lastActivity: currentClient.lastActivity,
+              connected: true,
+              messageCount: currentClient.messageCount,
+              user: currentClient.user || null
+            }));
+          } catch (redisError) {
+            console.warn('Failed to update session in Redis:', redisError.message);
+          }
+        }
       }
       
       // Enhanced input validation with specific error messages
@@ -183,7 +216,7 @@ function handleWebSocketConnection(ws, req, clients, userConnections, conversati
     }
   });
   
-  ws.on('close', () => {
+  ws.on('close', async () => {
     clearTimeout(connectionTimeout);
     console.log(`Client disconnected: ${clientId}`);
     
@@ -211,6 +244,21 @@ function handleWebSocketConnection(ws, req, clients, userConnections, conversati
     }
     
     clients.delete(clientId);
+    
+    // Clean up Redis session
+    if (isRedisConnected()) {
+      try {
+        const redisClient = getRedisClient();
+        await redisClient.del(`session:${clientId}`);
+        
+        // Also clean up user session mapping if user was authenticated
+        if (client && client.user) {
+          await redisClient.del(`user_session:${client.user.userId}`);
+        }
+      } catch (redisError) {
+        console.warn('Failed to clean up Redis session:', redisError.message);
+      }
+    }
     
     // Update metrics
     metrics.activeUsers = clients.size;
