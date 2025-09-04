@@ -11,6 +11,7 @@
     "test": "node test-chat-core-features.js",
     "test:comprehensive": "node ultimate-comprehensive-test.js",
     "test:startup": "node test-server-startup.js",
+    "test:editing": "node test-message-editing-deletion.js",
     "health": "curl http://localhost:3001/health",
     "metrics": "curl http://localhost:3001/metrics",
     "deploy:heroku": "bash deploy-heroku.sh",

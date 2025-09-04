@@ -170,6 +170,9 @@ git push heroku main
 ### **✅ Advanced Features**
 - **Message Replies**: Thread-based conversations
 - **Message Reactions**: Emoji reactions (👍, ❤️, 😂, etc.)
+- **Message Editing**: Edit messages within 5 minutes of sending
+- **Message Deletion**: Delete messages for self or everyone
+- **Conversation Deletion**: Delete entire conversations
 - **Typing Indicators**: Real-time typing status
 - **User Status**: Online/offline presence
 - **Message Search**: Full-text search capabilities
@@ -220,6 +223,29 @@ git push heroku main
   "reaction": "👍",
   "channel": "general"
 }
+
+// Edit Message
+{
+  "type": "edit_message",
+  "messageId": "message_id",
+  "newContent": "Updated message content",
+  "conversationId": "conversation_id"
+}
+
+// Delete Message
+{
+  "type": "delete_message",
+  "messageId": "message_id",
+  "conversationId": "conversation_id",
+  "deleteForEveryone": false
+}
+
+// Delete Conversation
+{
+  "type": "delete_conversation",
+  "conversationId": "conversation_id",
+  "deleteForEveryone": false
+}
 ```
 
 ### **Server Responses**
@@ -241,6 +267,32 @@ git push heroku main
   "timestamp": "2024-01-01T00:00:00Z"
 }
 
+// Message Edited
+{
+  "type": "message_edited",
+  "messageId": "message_id",
+  "conversationId": "conversation_id",
+  "newContent": "Updated message content",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+
+// Message Deleted
+{
+  "type": "message_deleted",
+  "messageId": "message_id",
+  "conversationId": "conversation_id",
+  "deleteForEveryone": false,
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+
+// Conversation Deleted
+{
+  "type": "conversation_deleted",
+  "conversationId": "conversation_id",
+  "deleteForEveryone": false,
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+
 // Error Response
 {
   "type": "error",
@@ -255,6 +307,7 @@ git push heroku main
 ### **Available Test Files**
 - `test-chat-core-features.js` - Core functionality test
 - `test-server-startup.js` - Server startup and Redis connection test
+- `test-message-editing-deletion.js` - Message editing and deletion features test
 - `ultimate-comprehensive-test.js` - Comprehensive test suite
 
 ### **Run Tests**
@@ -264,6 +317,9 @@ node test-chat-core-features.js
 
 # Test server startup and Redis
 node test-server-startup.js
+
+# Test message editing and deletion
+node test-message-editing-deletion.js
 
 # Run comprehensive test suite
 node ultimate-comprehensive-test.js
@@ -275,6 +331,9 @@ node ultimate-comprehensive-test.js
 - ✅ Message sending
 - ✅ Reply functionality
 - ✅ Reaction system
+- ✅ Message editing (within 5 minutes)
+- ✅ Message deletion (for self or everyone)
+- ✅ Conversation deletion
 - ✅ Redis connection and fallback
 - ✅ Error handling
 

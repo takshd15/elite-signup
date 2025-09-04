@@ -139,8 +139,166 @@ async function loadPrivateMessagesFromDatabase(conversationId, dbPool, limit = 5
   }
 }
 
+// Edit a message in the database
+async function editMessageInDatabase(messageId, newContent, dbPool) {
+  try {
+    const result = await dbPool.query(`
+      UPDATE private_messages 
+      SET content = $1, is_edited = true, edited_at = $2, updated_at = $2
+      WHERE message_id = $3 AND is_deleted = false
+      RETURNING *
+    `, [newContent, new Date().toISOString(), messageId]);
+    
+    if (result.rows.length > 0) {
+      console.log(`Message ${messageId} edited successfully`);
+      
+      // Update Redis cache
+      if (isRedisConnected()) {
+        try {
+          const redisClient = getRedisClient();
+          const message = result.rows[0];
+          await redisClient.setEx(`message:${messageId}`, 3600, JSON.stringify(message));
+        } catch (redisError) {
+          console.warn('Redis cache update failed for edited message:', redisError.message);
+        }
+      }
+      
+      return result.rows[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error editing message in database:', error);
+    throw error;
+  }
+}
+
+// Delete a message for everyone
+async function deleteMessageForEveryone(messageId, dbPool) {
+  try {
+    const result = await dbPool.query(`
+      UPDATE private_messages 
+      SET is_deleted = true, deleted_at = $1, deleted_for_everyone = true, updated_at = $1
+      WHERE message_id = $2
+      RETURNING *
+    `, [new Date().toISOString(), messageId]);
+    
+    if (result.rows.length > 0) {
+      console.log(`Message ${messageId} deleted for everyone`);
+      
+      // Remove from Redis cache
+      if (isRedisConnected()) {
+        try {
+          const redisClient = getRedisClient();
+          await redisClient.del(`message:${messageId}`);
+        } catch (redisError) {
+          console.warn('Redis cache deletion failed:', redisError.message);
+        }
+      }
+      
+      return result.rows[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error deleting message for everyone:', error);
+    throw error;
+  }
+}
+
+// Delete a message for a specific user only
+async function deleteMessageForUser(messageId, userId, dbPool) {
+  try {
+    // Insert into message_deletions table
+    await dbPool.query(`
+      INSERT INTO message_deletions (message_id, user_id, deleted_at) 
+      VALUES ($1, $2, $3) 
+      ON CONFLICT (message_id, user_id) DO UPDATE SET deleted_at = $3
+    `, [messageId, userId, new Date().toISOString()]);
+    
+    console.log(`Message ${messageId} deleted for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting message for user:', error);
+    throw error;
+  }
+}
+
+// Delete an entire conversation for everyone
+async function deleteConversationForEveryone(conversationId, dbPool) {
+  try {
+    // Mark all messages in conversation as deleted
+    await dbPool.query(`
+      UPDATE private_messages 
+      SET is_deleted = true, deleted_at = $1, deleted_for_everyone = true, updated_at = $1
+      WHERE conversation_id = $2
+    `, [new Date().toISOString(), conversationId]);
+    
+    // Mark conversation as deleted
+    await dbPool.query(`
+      UPDATE conversations 
+      SET deleted = true, deleted_at = $1, deleted_for_everyone = true, updated_at = $1
+      WHERE conversation_id = $2
+    `, [new Date().toISOString(), conversationId]);
+    
+    console.log(`Conversation ${conversationId} deleted for everyone`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting conversation for everyone:', error);
+    throw error;
+  }
+}
+
+// Delete a conversation for a specific user only
+async function deleteConversationForUser(conversationId, userId, dbPool) {
+  try {
+    // Insert into conversation_deletions table
+    await dbPool.query(`
+      INSERT INTO conversation_deletions (conversation_id, user_id, deleted_at) 
+      VALUES ($1, $2, $3) 
+      ON CONFLICT (conversation_id, user_id) DO UPDATE SET deleted_at = $3
+    `, [conversationId, userId, new Date().toISOString()]);
+    
+    console.log(`Conversation ${conversationId} deleted for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting conversation for user:', error);
+    throw error;
+  }
+}
+
+// Get messages with deletion status for a user
+async function getMessagesWithDeletionStatus(conversationId, userId, dbPool) {
+  try {
+    const result = await dbPool.query(`
+      SELECT 
+        pm.*,
+        CASE 
+          WHEN pm.deleted_for_everyone = true THEN true
+          WHEN md.message_id IS NOT NULL THEN true
+          ELSE false
+        END as is_deleted_for_user
+      FROM private_messages pm
+      LEFT JOIN message_deletions md ON pm.message_id = md.message_id AND md.user_id = $2
+      WHERE pm.conversation_id = $1 
+        AND pm.is_deleted = false
+        AND (pm.deleted_for_everyone = false OR md.message_id IS NULL)
+      ORDER BY pm.created_at ASC
+    `, [conversationId, userId]);
+    
+    return result.rows;
+  } catch (error) {
+    console.error('Error getting messages with deletion status:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   savePrivateMessageToDatabase,
-  loadPrivateMessagesFromDatabase
+  loadPrivateMessagesFromDatabase,
+  editMessageInDatabase,
+  deleteMessageForEveryone,
+  deleteMessageForUser,
+  deleteConversationForEveryone,
+  deleteConversationForUser,
+  getMessagesWithDeletionStatus
 };
 
